@@ -1,0 +1,8 @@
+LIBRARY myaddtest
+EXPORTS
+myaddtestInitialize
+myaddtestInitializeWithHandlers
+myaddtestTerminate
+myaddtestPrintStackTrace
+mlxMyadd
+

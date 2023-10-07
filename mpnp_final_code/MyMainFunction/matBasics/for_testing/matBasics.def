@@ -1,0 +1,10 @@
+LIBRARY matBasics
+EXPORTS
+matBasicsInitialize
+matBasicsInitializeWithHandlers
+matBasicsTerminate
+matBasicsPrintStackTrace
+mlxMatAbs
+mlxMatAdd
+mlxMatLoadDataFile
+

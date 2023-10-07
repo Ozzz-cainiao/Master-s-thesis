@@ -1,0 +1,8 @@
+LIBRARY testMulti
+EXPORTS
+testMultiInitialize
+testMultiInitializeWithHandlers
+testMultiTerminate
+testMultiPrintStackTrace
+mlxTestMulti
+

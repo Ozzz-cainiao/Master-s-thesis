@@ -1,0 +1,121 @@
+<html><meta charset="UTF-8"><pre>
+<font color=blue>mcc -W 'cpplib:calcAll,all,version=1.0' -T link:lib -d E:\MPNP\MyMainFunction\calcAll_v1\for_testing -v E:\MPNP\MyMainFunction\calcAll.m </font>
+Compiler version: 8.5 (R2022b)
+
+Analyzing file dependencies. 
+
+Parsing file "E:\MPNP\MyMainFunction\calcAll.m"
+	(referenced from command line).
+Generating file "E:\MPNP\MyMainFunction\calcAll_v1\for_testing\readme.txt".
+Generating file "E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.h".
+Generating file "E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.cpp".
+Generating file "E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.exports".
+Generating file "E:\MPNP\MyMainFunction\calcAll_v1\for_testing\v2\generic_interface\readme.txt".
+Executing command: ""D:\Program Files\MATLAB\R2022b\bin\mbuild"  -client mbuild -O -v -output "calcAll" -I"E:\MPNP\MyMainFunction\calcAll_v1\for_testing" "E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.cpp"  DEFFILE"=""E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.def""" LINKEXPORT"=""/DLL /def:\"$DEFFILE\"""" LDEXT"="".dll""" LDTYPE"="" -shared -static""" MTCMDLINE"=""mt -outputresource:$EXE;2 -manifest $MANIFEST""" -outdir "E:\MPNP\MyMainFunction\calcAll_v1\for_testing""
+详细模式已开。
+... 正在查找编译器 'MinGW64 Compiler (C++)'...
+... 正在查找环境变量 'MW_MINGW64_LOC'...是('C:\ProgramData\MATLAB\SupportPackages\R2022b\3P.instrset\mingw_w64.instrset')。
+... 正在查找文件 'C:\ProgramData\MATLAB\SupportPackages\R2022b\3P.instrset\mingw_w64.instrset\bin\g++.exe'...是。
+... 正在查找文件夹 'C:\ProgramData\MATLAB\SupportPackages\R2022b\3P.instrset\mingw_w64.instrset'...是。
+... 正在查找环境变量 'MW_MINGW64_LOC'...是('C:\ProgramData\MATLAB\SupportPackages\R2022b\3P.instrset\mingw_w64.instrset')。
+... 正在执行命令 'C:\ProgramData\MATLAB\SupportPackages\R2022b\3P.instrset\mingw_w64.instrset\bin\g++ -dumpmachine'...是('x86_64-w64-mingw32')。
+... 正在查找环境变量 'MW_MINGW64_LOC'...是('C:\ProgramData\MATLAB\SupportPackages\R2022b\3P.instrset\mingw_w64.instrset')。
+... 正在执行命令 'C:\ProgramData\MATLAB\SupportPackages\R2022b\3P.instrset\mingw_w64.instrset\bin\g++ -dumpversion'...是('6.3.0')。
+找到已安装的编译器 'MinGW64 Compiler (C++)'。
+设置 PATH = C:\ProgramData\MATLAB\SupportPackages\R2022b\3P.instrset\mingw_w64.instrset\bin;D:\Program Files\MATLAB\R2022b\extern\include\win64;D:\Program Files\MATLAB\R2022b\extern\include;D:\Program Files\MATLAB\R2022b\simulink\include;D:\Program Files\MATLAB\R2022b\lib\win64;C:\windows\system32;C:\windows;C:\windows\System32\Wbem;C:\windows\System32\WindowsPowerShell\v1.0\;C:\windows\System32\OpenSSH\;D:\Program Files (x86)\NetSarang\Xshell 7\;C:\Program Files\Git\cmd;D:\Program Files (x86)\NetSarang\Xftp 7\;D:\Program Files\MATLAB\R2022b\runtime\win64;D:\Program Files\MATLAB\R2022b\bin;C:\Program Files\dotnet\;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\Users\Lenovo\AppData\Local\Microsoft\WindowsApps;C:\Users\Lenovo\AppData\Local\JetBrains\Toolbox\scripts;;D:\Program Files (x86)\Microsoft VS Code\bin;C:\Users\Lenovo\.dotnet\tools
+设置 INCLUDE = C:\ProgramData\MATLAB\SupportPackages\R2022b\3P.instrset\mingw_w64.instrset\include;C:\ProgramData\MATLAB\SupportPackages\R2022b\3P.instrset\mingw_w64.instrset\lib\gcc\x86_64-w64-mingw32\6.3.0\include\c++;C:\ProgramData\MATLAB\SupportPackages\R2022b\3P.instrset\mingw_w64.instrset\lib\gcc\x86_64-w64-mingw32\6.3.0\include;C:\ProgramData\MATLAB\SupportPackages\R2022b\3P.instrset\mingw_w64.instrset\lib\gcc\x86_64-w64-mingw32\6.3.0\include\c++\x86_64-w64-mingw32;C:\ProgramData\MATLAB\SupportPackages\R2022b\3P.instrset\mingw_w64.instrset\lib\gcc\x86_64-w64-mingw32\6.3.0\include\c++\backward;C:\ProgramData\MATLAB\SupportPackages\R2022b\3P.instrset\mingw_w64.instrset\x86_64-w64-mingw32\include;
+设置 LIB = C:\ProgramData\MATLAB\SupportPackages\R2022b\3P.instrset\mingw_w64.instrset\lib;;
+设置 MW_TARGET_ARCH = win64;
+设置 LIBPATH = D:\Program Files\MATLAB\R2022b\extern\lib\win64;
+Options file details
+-------------------------------------------------------------------
+	Compiler location: C:\ProgramData\MATLAB\SupportPackages\R2022b\3P.instrset\mingw_w64.instrset
+	Options file: C:\Users\Lenovo\AppData\Roaming\MathWorks\MATLAB\R2022b\MBUILD_C++_win64.xml
+	CMDLINE1 : C:\ProgramData\MATLAB\SupportPackages\R2022b\3P.instrset\mingw_w64.instrset\bin\g++ -c -DMATLAB_DEFAULT_RELEASE=R2017b  -DUSE_MEX_CMD   -m64  -I"E:\MPNP\MyMainFunction\calcAll_v1\for_testing"  -I"D:\Program Files\MATLAB\R2022b/extern/include" -I"D:\Program Files\MATLAB\R2022b/simulink/include" -I"D:\Program Files\MATLAB\R2022b\extern\include\win64" -fexceptions -fno-omit-frame-pointer -std=c++11 -Wno-endif-labels -O2 -fwrapv -DNDEBUG "E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.cpp" -o C:\Users\Lenovo\AppData\Local\Temp\mex_1495735904810474_65452\calcAll.obj
+	CMDLINE2 : C:\ProgramData\MATLAB\SupportPackages\R2022b\3P.instrset\mingw_w64.instrset\bin\g++ -m64 -Wl,--no-undefined,--out-implib,"E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.lib","E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.def"  -shared -static -s  C:\Users\Lenovo\AppData\Local\Temp\mex_1495735904810474_65452\calcAll.obj   -L"D:\Program Files\MATLAB\R2022b\extern\lib\win64\mingw64" -lmclmcrrt -Bstatic "D:\Program Files\MATLAB\R2022b\extern\bin\win64\libMatlabDataArray.dll.a" -llibMatlabCppSharedLib -lkernel32 -luser32 -lgdi32 -lwinspool -lcomdlg32 -ladvapi32 -lshell32 -lole32 -loleaut32 -luuid -lodbc32 -lodbccp32  -o E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.dll
+	CXX : C:\ProgramData\MATLAB\SupportPackages\R2022b\3P.instrset\mingw_w64.instrset\bin\g++
+	COMPILER : C:\ProgramData\MATLAB\SupportPackages\R2022b\3P.instrset\mingw_w64.instrset\bin\g++
+	DEFINES : -DMATLAB_DEFAULT_RELEASE=R2017b  -DUSE_MEX_CMD   -m64 
+	MATLABMEX : 
+	CFLAGS : -fexceptions -fno-omit-frame-pointer
+	CXXFLAGS : -fexceptions -fno-omit-frame-pointer -std=c++11 -Wno-endif-labels
+	INCLUDE : -I"E:\MPNP\MyMainFunction\calcAll_v1\for_testing"  -I"D:\Program Files\MATLAB\R2022b/extern/include" -I"D:\Program Files\MATLAB\R2022b/simulink/include" -I"D:\Program Files\MATLAB\R2022b\extern\include\win64"
+	CXXOPTIMFLAGS : -O2 -fwrapv -DNDEBUG
+	CXXDEBUGFLAGS : -g
+	LDXX : C:\ProgramData\MATLAB\SupportPackages\R2022b\3P.instrset\mingw_w64.instrset\bin\g++
+	LINKER : C:\ProgramData\MATLAB\SupportPackages\R2022b\3P.instrset\mingw_w64.instrset\bin\g++
+	LDFLAGS : -m64 -Wl,--no-undefined,--out-implib,"E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.lib","E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.def"
+	LDTYPE :  -shared -static
+	LINKEXPORT : /DLL /def:"E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.def"
+	LINKEXPORTVER : 
+	LIBLOC : D:\Program Files\MATLAB\R2022b\extern\lib\win64\mingw64
+	LINKLIBS : -L"D:\Program Files\MATLAB\R2022b\extern\lib\win64\mingw64" -lmclmcrrt -Bstatic "D:\Program Files\MATLAB\R2022b\extern\bin\win64\libMatlabDataArray.dll.a" -llibMatlabCppSharedLib -lkernel32 -luser32 -lgdi32 -lwinspool -lcomdlg32 -ladvapi32 -lshell32 -lole32 -loleaut32 -luuid -lodbc32 -lodbccp32 
+	LDOPTIMFLAGS : -s
+	LDDEBUGFLAGS : -g
+	OBJEXT : .obj
+	LDEXT : .dll
+	SETENV : set COMPILER=C:\ProgramData\MATLAB\SupportPackages\R2022b\3P.instrset\mingw_w64.instrset\bin\gcc
+                set CXXCOMPILER=C:\ProgramData\MATLAB\SupportPackages\R2022b\3P.instrset\mingw_w64.instrset\bin\g++
+                set COMPFLAGS=-c -fexceptions -fno-omit-frame-pointer -DMATLAB_DEFAULT_RELEASE=R2017b  -DUSE_MEX_CMD   -m64  
+                set CXXCOMPFLAGS=-c -fexceptions -fno-omit-frame-pointer -std=c++11 -Wno-endif-labels -DMATLAB_DEFAULT_RELEASE=R2017b  -DUSE_MEX_CMD   -m64  
+                set OPTIMFLAGS=-O2 -fwrapv -DNDEBUG
+                set DEBUGFLAGS=-g
+                set LINKER=C:\ProgramData\MATLAB\SupportPackages\R2022b\3P.instrset\mingw_w64.instrset\bin\gcc
+                set CXXLINKER=C:\ProgramData\MATLAB\SupportPackages\R2022b\3P.instrset\mingw_w64.instrset\bin\g++
+                set LINKFLAGS=-m64 -Wl,--no-undefined,--out-implib,"E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.lib","E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.def"  -shared -static -L"D:\Program Files\MATLAB\R2022b\extern\lib\win64\mingw64" -lmclmcrrt -Bstatic "D:\Program Files\MATLAB\R2022b\extern\bin\win64\libMatlabDataArray.dll.a" -llibMatlabCppSharedLib -lkernel32 -luser32 -lgdi32 -lwinspool -lcomdlg32 -ladvapi32 -lshell32 -lole32 -loleaut32 -luuid -lodbc32 -lodbccp32  /DLL /def:"E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.def"
+                set LINKDEBUGFLAGS=-g
+                set NAME_OUTPUT= -o "%OUTDIR%%MEX_NAME%%MEX_EXT%"
+	MINGWROOT : C:\ProgramData\MATLAB\SupportPackages\R2022b\3P.instrset\mingw_w64.instrset
+	MINGWTARGET : x86_64-w64-mingw32
+	VERSION : 6.3.0
+	MATLABROOT : D:\Program Files\MATLAB\R2022b
+	ARCH : win64
+	DEFFILE : E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.def
+	LINKTYPE : 
+	SRC : "E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.cpp"
+	OBJ : C:\Users\Lenovo\AppData\Local\Temp\mex_1495735904810474_65452\calcAll.obj
+	OBJS : C:\Users\Lenovo\AppData\Local\Temp\mex_1495735904810474_65452\calcAll.obj 
+	SRCROOT : E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll
+	DEF : C:\Users\Lenovo\AppData\Local\Temp\mex_1495735904810474_65452\calcAll.def
+	EXP : "E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.exp"
+	LIB : "E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.lib"
+	EXE : E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.dll
+	ILK : "E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.ilk"
+	MANIFEST : "E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.dll.manifest"
+	TEMPNAME : E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll
+	EXEDIR : E:\MPNP\MyMainFunction\calcAll_v1\for_testing\
+	EXENAME : calcAll
+	MTCMDLINE : mt -outputresource:E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.dll;2 -manifest "E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.dll.manifest"
+	OPTIM : -O2 -fwrapv -DNDEBUG
+	LINKOPTIM : -s
+-------------------------------------------------------------------
+使用 'MinGW64 Compiler (C++)' 编译。
+C:\ProgramData\MATLAB\SupportPackages\R2022b\3P.instrset\mingw_w64.instrset\bin\g++ -c -DMATLAB_DEFAULT_RELEASE=R2017b  -DUSE_MEX_CMD   -m64  -I"E:\MPNP\MyMainFunction\calcAll_v1\for_testing"  -I"D:\Program Files\MATLAB\R2022b/extern/include" -I"D:\Program Files\MATLAB\R2022b/simulink/include" -I"D:\Program Files\MATLAB\R2022b\extern\include\win64" -fexceptions -fno-omit-frame-pointer -std=c++11 -Wno-endif-labels -O2 -fwrapv -DNDEBUG "E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.cpp" -o C:\Users\Lenovo\AppData\Local\Temp\mex_1495735904810474_65452\calcAll.obj
+E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.cpp:22:0: warning: "NOMINMAX" redefined
+ #define NOMINMAX
+ 
+In file included from C:/ProgramData/MATLAB/SupportPackages/R2022b/3P.instrset/mingw_w64.instrset/lib/gcc/x86_64-w64-mingw32/6.3.0/include/c++/x86_64-w64-mingw32/bits/c++config.h:507:0,
+                 from C:/ProgramData/MATLAB/SupportPackages/R2022b/3P.instrset/mingw_w64.instrset/lib/gcc/x86_64-w64-mingw32/6.3.0/include/c++/cstdlib:41,
+                 from C:/ProgramData/MATLAB/SupportPackages/R2022b/3P.instrset/mingw_w64.instrset/lib/gcc/x86_64-w64-mingw32/6.3.0/include/c++/stdlib.h:36,
+                 from C:/ProgramData/MATLAB/SupportPackages/R2022b/3P.instrset/mingw_w64.instrset/lib/gcc/x86_64-w64-mingw32/6.3.0/include/mm_malloc.h:27,
+                 from C:/ProgramData/MATLAB/SupportPackages/R2022b/3P.instrset/mingw_w64.instrset/lib/gcc/x86_64-w64-mingw32/6.3.0/include/xmmintrin.h:34,
+                 from C:/ProgramData/MATLAB/SupportPackages/R2022b/3P.instrset/mingw_w64.instrset/lib/gcc/x86_64-w64-mingw32/6.3.0/include/x86intrin.h:33,
+                 from C:/ProgramData/MATLAB/SupportPackages/R2022b/3P.instrset/mingw_w64.instrset/x86_64-w64-mingw32/include/winnt.h:1520,
+                 from C:/ProgramData/MATLAB/SupportPackages/R2022b/3P.instrset/mingw_w64.instrset/x86_64-w64-mingw32/include/minwindef.h:163,
+                 from C:/ProgramData/MATLAB/SupportPackages/R2022b/3P.instrset/mingw_w64.instrset/x86_64-w64-mingw32/include/windef.h:8,
+                 from C:/ProgramData/MATLAB/SupportPackages/R2022b/3P.instrset/mingw_w64.instrset/x86_64-w64-mingw32/include/windows.h:69,
+                 from D:\Program Files\MATLAB\R2022b/extern/include/mclmcrrt.h:53,
+                 from E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.h:16,
+                 from E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.cpp:11:
+C:/ProgramData/MATLAB/SupportPackages/R2022b/3P.instrset/mingw_w64.instrset/lib/gcc/x86_64-w64-mingw32/6.3.0/include/c++/x86_64-w64-mingw32/bits/os_defines.h:45:0: note: this is the location of the previous definition
+ #define NOMINMAX 1
+ 
+
+C:\ProgramData\MATLAB\SupportPackages\R2022b\3P.instrset\mingw_w64.instrset\bin\g++ -m64 -Wl,--no-undefined,--out-implib,"E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.lib","E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.def"  -shared -static -s  C:\Users\Lenovo\AppData\Local\Temp\mex_1495735904810474_65452\calcAll.obj   -L"D:\Program Files\MATLAB\R2022b\extern\lib\win64\mingw64" -lmclmcrrt -Bstatic "D:\Program Files\MATLAB\R2022b\extern\bin\win64\libMatlabDataArray.dll.a" -llibMatlabCppSharedLib -lkernel32 -luser32 -lgdi32 -lwinspool -lcomdlg32 -ladvapi32 -lshell32 -lole32 -loleaut32 -luuid -lodbc32 -lodbccp32  -o E:\MPNP\MyMainFunction\calcAll_v1\for_testing\calcAll.dll
+<font color=blue>正在打包...</font>
+Creating the bundle...
+Creating the install agent URL file...
+Web based installer created at E:\MPNP\MyMainFunction\calcAll_v1\for_redistribution\MyAppInstaller_web.exe.
+Packaging complete.
+Elapsed packaging time was: 14 seconds.
+</pre></html>

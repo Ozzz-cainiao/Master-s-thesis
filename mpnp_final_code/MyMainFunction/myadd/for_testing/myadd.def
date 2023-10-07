@@ -1,0 +1,8 @@
+LIBRARY myadd
+EXPORTS
+myaddInitialize
+myaddInitializeWithHandlers
+myaddTerminate
+myaddPrintStackTrace
+mlxMyadd
+
