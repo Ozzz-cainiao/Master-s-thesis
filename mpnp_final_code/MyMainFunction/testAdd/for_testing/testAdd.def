@@ -1,0 +1,8 @@
+LIBRARY testAdd
+EXPORTS
+testAddInitialize
+testAddInitializeWithHandlers
+testAddTerminate
+testAddPrintStackTrace
+mlxTestAdd
+

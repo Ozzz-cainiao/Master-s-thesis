@@ -1,0 +1,6 @@
+testAddInitialize
+testAddInitializeWithHandlers
+testAddTerminate
+testAddPrintStackTrace
+mlxTestAdd
+
