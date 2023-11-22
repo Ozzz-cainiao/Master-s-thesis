@@ -23,12 +23,12 @@ var2d = 1.5^2;
 % var2d   = 0^2 ;
 var2 = var2d * (pi / 180)^2;
 v0 = [10, 10, 20, 15];
-range 	= [ 2e3 4e3 6e3 8e3]; % 目标产生位置的距离,与原点的距离
+range 	= [2e3 4e3 6e3 8e3]; % 目标产生位置的距离,与原点的距离
 bear = [60, 30, 90, 45]; % 目标产生位置的角度
 course = [90, 50, 40, 120]; % 运动方向
 num = length(v0);
-x0 = range .* cosd(bear);
-y0 = range .* sind(bear);
+x0 = range .* cosd(bear); % 初始位置
+y0 = range .* sind(bear); % 初始速度
 vy = v0 .* cosd(course);
 vx = v0 .* sind(course);
 X0 = [x0; y0; vx; vy];
@@ -73,16 +73,16 @@ for i = 1:num
     y(i, :) = X{i}(2, :);
 
 end
-figure
+color = ['#059341'; '#EFA90D'; '#059341'; '#DC2F1F'; '#EFA90D'; '#7E2F8E'];
+figure('Units', 'centimeters', 'Position', [20, 5, 20, 11.24 / 15 * 15]); 
 hold on
 for i = 1:num
-    plot(x(i, :), y(i, :), '.')
+    aim_r = plot(x(i, :), y(i, :), 'Color', color(i,:), 'LineWidth', 2);
 end
 set(gca, 'Box', 'on')
 grid on
-
 obs_f = scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100); % 画线并声明变量名称
-legend([outLoc,aim_a obs_f],'真实轨迹', '观测站', 'Location', 'eastoutside', 'FontSize', 12)
+legend([aim_r obs_f],'真实轨迹', '观测站', 'Location', 'eastoutside', 'FontSize', 12)
 xlabel('东向坐标/m', 'FontSize', 12)
 ylabel('北向坐标/m', 'FontSize', 12)
 title('目标真实轨迹')
@@ -116,8 +116,14 @@ for ii = 1:size(node, 1)
 end
 
 % 画图
-color = ['#059341'; '#EFA90D'; '#059341'; '#DC2F1F'; '#EFA90D'; '#7E2F8E'];
-figure('Units', 'centimeters', 'Position', [20, 5, 20, 11.24 / 15 * 15])
+
+figure('Units', 'centimeters', 'Position', [20, 5, 20, 11.24 / 15 * 15]); 
+% 这段 MATLAB 语法 figure('Units', 'centimeters', 'Position', [20, 5, 20, 11.24 / 15 * 15]) 是用于创建一个图形窗口，并设置其单位、位置和大小。
+% figure()：创建一个新的图形窗口，并返回一个与该窗口关联的图形对象。括号内可以指定其他参数来自定义窗口的属性。
+% 'Units', 'centimeters'：这是一个名称-值对，用于设置图形窗口的单位。在本例中，单位被设置为厘米。
+% 'Position', [20, 5, 20, 11.24 / 15 * 15]：这是另一个名称-值对，用于设置图形窗口的位置和大小。[20, 5, 20, 11.24 / 15 * 15] 是一个包含四个元素的向量，
+% 分别表示窗口的左下角 x 坐标、左下角 y 坐标、宽度和高度。在本例中，窗口的左下角位于 x = 20 厘米、y = 5 厘米的位置，宽度为 20 厘米，
+% 高度为 11.24 / 15 * 15 厘米。
 for i = 1:num
     if i < 8
         color_line = color(i, :);
@@ -138,6 +144,51 @@ set(gca, 'Box', 'on')
 xlabel('东向坐标/m', 'FontSize', 12)
 ylabel('北向坐标/m', 'FontSize', 12)
 title('粗关联+时空关联定位')
+
+%% 特征信息
+% 目标1 lfm 连续声源
+% 目标2 cw + lfm 脉冲信号与宽带信号叠加
+% 目标3 cw + lfm 脉冲信号与宽带信号叠加
+% 目标4 
+dataFeature = []
+
+% 创建一个结构体
+dataStruct.
+
+%% ==========================新观测+添加特征信息===============================
+
+t_obs = T:T:T_num * T + 20;
+X = repmat(node, 1, 1, T_num);
+[x_obs, y_obs] = deal(zeros(size(node, 1), T_num));
+dataR = cell(1, size(node, 1));
+
+
+
+for ii = 1:size(node, 1)
+    x_obs(ii, :) = X(ii, 1, :);
+    y_obs(ii, :) = X(ii, 2, :);
+    dataR{ii} = cell(num, length(t_obs)); % 作为存储真实数据的cell  4*25000cell
+    for i = 1:num
+        x_r(i, :) = x(i, :) - x_obs(ii, 1:T_num);
+        y_r(i, :) = y(i, :) - y_obs(ii, 1:T_num);
+        r_r = sqrt(x_r(i, :).^2+y_r(i, :).^2);
+        angle_r(i, :) = atan2d(y_r(i, :), x_r(i, :));
+        angle_r(angle_r < 0) = angle_r(angle_r < 0) + 360;
+        t_r = r_r / c;
+        t_delay{i, ii} = round(t_r, 1);
+        for iii = 1:T_num
+            tNum = round(t_delay{ii}(iii)/T) + iii;
+            angR{ii}{i, tNum} = angle_r(i, iii) + sqrt(var2d) * randn;
+        end
+    end
+    for iii = 1:size(angR{ii}, 2)
+        angR{ii}(:, iii) = sort(angR{ii}(:, iii));
+    end
+end
+
+%% ==========================添加特征信息===============================
+
+
 
 
 % 接收参数级的信息，根据接收数组的种类线谱特点进行分类判断
