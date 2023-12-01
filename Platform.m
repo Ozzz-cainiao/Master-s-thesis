@@ -24,12 +24,20 @@ classdef Platform
         end
 
         % 获取目标信息的方法  在这里加上传播时延
-        function [angle, distance, t_delay] = getTargetInfo(obj, target)
+        function [angle, distance, t_delay, type, fre] = getTargetInfo(obj, target)
             relative_position = target.Position - obj.position;
+%             disp(relative_position);
             distance = norm(relative_position);
             angle = atan2d(relative_position(2), relative_position(1)); % 与x正的夹角
             angle(angle < 0) = angle(angle  < 0) + 360;
             t_delay = distance / obj.c;
+            type = target.Type; % 获得信号类型
+            if strcmp(type, 'CW')
+                fre = target.Frequency; % 获得信号频率
+            else
+                fre = 0; % 其它信号频率先设置为0
+            end
+
         end
     end
 end

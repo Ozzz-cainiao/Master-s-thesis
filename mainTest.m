@@ -11,6 +11,7 @@
 clc
 clear
 close all
+
 %% 创建平台
 platform1 = Platform([0, 0]);
 platform2 = Platform([1e4, 0]);
@@ -24,42 +25,70 @@ platFormAll = [platform1, platform2, platform3, platform4];
 initial_position1 = [3e3, 3e3]; % 初始位置目标1
 initial_position2 = [7e3, 5e3]; % 初始位置目标2
 
-velocity1 = [100, 15]; % 运动速度（假设在 x 轴上匀速运动）
+velocity1 = [10, 0]; % 运动速度（假设在 x 轴上匀速运动）
 velocity2 = [-15, 15]; % 运动速度（假设在 x 轴上匀速运动）
 
-source1 = SoundSource('CW', [2e3, 5e3], [100, 50], initial_position1, velocity1);
-source2 = SoundSource('LFM', [1e3, 2e3], [100, 50], initial_position2, velocity2);
+acc1 = [0, 0]; % 加速度
+acc2 = [0, 0]; % 加速度
+
+source1 = SoundSource('CW', [2e3, 5e3], [100, 50], initial_position1, velocity1, acc1);
+source2 = SoundSource('LFM', [1e3, 2e3], [100, 50], initial_position2, velocity2, acc2);
 
 sourceAll = [source1, source2];
 %% 模拟数据
 
-time_steps = 10; % 假设有 10 个时间步长
+time_steps = 100; % 假设有 10 个时间步长
 delta_time = 1; % 每个时间步长的时间间隔
 
 % 创建一个多维矩阵来存储目标信息
-% 维度1：平台，维度2：目标，维度3：时刻
+% 维度1：平台，维度2：时刻，维度3：目标
 numOfPlatForm = size(platFormAll, 2);
 numOfSource = size(sourceAll, 2);
 target_info_matrix = cell(numOfPlatForm, numOfSource, time_steps + 1); % cell矩阵
 
 for i = 1:time_steps + 1
-    source1 = source1.updatePosition(delta_time - 1);
-    disp(source1.Position)
-    source2 = source2.updatePosition(delta_time - 1);
+%     source1 = source1.updatePosition(delta_time);
+%     disp(source1.Position)
+%     source2 = source2.updatePosition(delta_time);
 
     % 获取每个平台的每个目标信息
     for j = 1:numOfPlatForm % 遍历平台
         for k = 1 : numOfSource % 遍历声源
-            [angle, distance, t_delay] = platFormAll(j).getTargetInfo(sourceAll(k));
+            sourceAll(k) = sourceAll(k).updatePosition(delta_time);
+            [angle, ~, t_delay, type, fre] = platFormAll(j).getTargetInfo(sourceAll(k));
             t_Num = round(t_delay / delta_time) + i; % 放到此时刻传播时延之前的时刻
-            target_info_matrix{j, k, t_Num} = struct('angle', angle, 'distance', distance);
+            target_info_matrix{j, t_Num, k} = struct('angle', angle, 'type', type, 'fre', fre);  %
+%             如果数据多就采用结构体
+%             
+%             target_info_matrix{j, t_Num, k} = angle;
+
         end
     end
 end
-% for i = 1 : 10
-%     i
-%     disp(target_info_matrix{1, 1, i});
-% end
+
 % 显示目标信息矩阵
-disp('Target Information Matrix:');
-disp(target_info_matrix);
+for i = 1 : 10
+    i
+    disp(target_info_matrix{1, i, 1});
+end
+for i = 1 : 10
+    i
+    disp(target_info_matrix{1, i, 2});
+end
+
+%% 
+
+%% 多参量融合，看看怎么多参量融合
+
+
+%% 如何区分目标类型
+
+%% 实现纯方位交汇定位
+
+
+
+%% 实现双曲面交汇定位
+
+
+%% 实现时延差/方位联合定位
+
