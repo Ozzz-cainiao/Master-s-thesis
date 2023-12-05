@@ -1,55 +1,25 @@
-%**************************************************************************
-% 文件名: E:\坚果云同步文件夹\毕设——非合作多目标定位\FinalCode\temp.m
-% 版本: v1.0
-% 作者: ZLM
-% 联系方式: Liminzhang7@outlook.com
-% 日期: 2023-11-21
-% 描述: 这是函数功能说明
-% 输入:  
-% 输出:  
-%**************************************************************************
-%% 将结构体保存在cell数组中
+%% 
+clc
+clear
 
-% 创建一个包含结构体的 cell 数组
-cellArray = cell(1, 2);
+syms x1 y1 x2 y2 c xs ys theta t1 t2 ts a b d m n p
 
-% 创建一个结构体并赋值
-myStruct1.name = 'John';
-myStruct1.age = 30;
+eq1 = (x1 - xs)^2 + (y1 - ys)^2 - c^2 * (t1 - ts)^2;
+eq2 = (x2 - xs)^2 + (y2 - ys)^2 - c^2 * (t2 - ts)^2;
+eq3 = (x2 - xs)^2 + (y2 - ys)^2 - ((x1 - xs)^2 + (y1 - ys)^2 + (x1 - x2)^2 + (y1 - y2)^2) + 2 * sqrt((x1 - xs)^2 + (y1 - ys)^2) * sqrt((x1 - x2)^2 + (y1 - y2)^2) * cos(theta);
 
-% 将结构体存储在 cell 数组的第一个位置
-cellArray{1} = myStruct1;
-
-% 创建另一个结构体并赋值
-myStruct2.name = 'Jane';
-myStruct2.age = 28;
-
-% 将结构体存储在 cell 数组的第二个位置
-cellArray{2} = myStruct2;
-cellArray
-
-
-%% 创建声源对象
-
-soundSource = SoundSource(90, 'lfm', [1000, 0.5], 0.2, [0, 0], 10, '向右');
-
-% 获取初始位置
-initialPosition = soundSource.InitialPosition;
-
-% 更新位置
-newPosition = [1, 2];
-soundSource.updatePosition(newPosition);
-
-% 更新运动时间
-newMotionTime = 20;
-soundSource.updateMotionTime(newMotionTime);
-
-% 更新运动方向
-newMotionDirection = '向左';
-soundSource.updateMotionDirection(newMotionDirection);
-
-
-a = 10
-
-
+% a = x1 - xs;
+% b = y1 - ys;
+% d = t1 - ts;
+% m = x2 - x1;
+% n = y2 - y1;
+% p = t2 - t1;
+eq1_revised = a^2 + b^2 - c^2 * d^2;
+eq3_revised = (x2 - xs)^2 + (y2 - ys)^2 - (a^2 + b^2 + m^2 + n^2) + 2 * sqrt(a^2 + b^2) * sqrt(m^2 + n^2) * cos(theta);
+% eq = [eq1, eq2, eq3];
+eq12 = eq1 - eq2;
+eq13 = eq1 - eq3;
+eq23 = eq2 - eq3;
+eq = [eq1, eq2, eq3];
+solutions = solve(eq, [xs, ys, ts]);
 

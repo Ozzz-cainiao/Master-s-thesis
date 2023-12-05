@@ -17,6 +17,7 @@ classdef SoundSource
         Position % 位置(x,y)
         Volicity % 速度
         Acceleration    % 加速度
+        PulseWidth = 1 % 脉宽 (仅适用于 'CW')
         DutyCycle = 0.5 % 脉宽占空比 (仅适用于 'CW')
     end
     

@@ -23,30 +23,42 @@ platFormAll = [platform1, platform2, platform3, platform4];
 %% 创建运动的声源对象
 
 initial_position1 = [3e3, 3e3]; % 初始位置目标1
-initial_position2 = [7e3, 5e3]; % 初始位置目标2
-
 velocity1 = [10, 0]; % 运动速度（假设在 x 轴上匀速运动）
-velocity2 = [-15, 15]; % 运动速度（假设在 x 轴上匀速运动）
-
 acc1 = [0, 0]; % 加速度
-acc2 = [0, 0]; % 加速度
+source1 = SoundSource('CW', [2e3], [100], initial_position1, velocity1, acc1);
 
-source1 = SoundSource('CW', [2e3, 5e3], [100, 50], initial_position1, velocity1, acc1);
+initial_position2 = [7e3, 5e3]; % 初始位置目标2
+velocity2 = [-15, 15]; % 运动速度（假设在 x 轴上匀速运动）
+acc2 = [0, 0]; % 加速度
 source2 = SoundSource('LFM', [1e3, 2e3], [100, 50], initial_position2, velocity2, acc2);
 
-sourceAll = [source1, source2];
-%% 模拟数据
+initial_position3 = [7e3, 5e3]; % 初始位置目标2
+velocity3 = [-15, 15]; % 运动速度（假设在 x 轴上匀速运动）
+acc3 = [0, 0]; % 加速度
+source3 = SoundSource('CW', [1e3, 2e3], [100, 50], initial_position2, velocity2, acc2);
 
-time_steps = 100; % 假设有 10 个时间步长
-delta_time = 1; % 每个时间步长的时间间隔
+initial_position4 = [2e3, 7e3]; % 初始位置目标2
+velocity4 = [-15, 15]; % 运动速度（假设在 x 轴上匀速运动）
+acc4 = [0, 0]; % 加速度
+source4 = SoundSource('CW', [1e3, 2e3], [100, 50], initial_position2, velocity2, acc2);
+
+sourceAll = [source1, source2, source3, source4];
+%% 模拟数据
+T       = 1;                 %观测周期
+T_all   = 50;                   %观测时间
+T_num   = T_all/T;              %观测次数
+dt = T; % 观测周期
 
 % 创建一个多维矩阵来存储目标信息
 % 维度1：平台，维度2：时刻，维度3：目标
 numOfPlatForm = size(platFormAll, 2);
 numOfSource = size(sourceAll, 2);
-target_info_matrix = cell(numOfPlatForm, numOfSource, time_steps + 1); % cell矩阵
+target_info_matrix = cell(numOfPlatForm, numOfSource, T_all + 1); % cell矩阵
+angR = cell(numOfPlatForm, 1);
 
-for i = 1:time_steps + 1
+
+%% 观测
+for i = 1:T_num
 %     source1 = source1.updatePosition(delta_time);
 %     disp(source1.Position)
 %     source2 = source2.updatePosition(delta_time);
@@ -54,14 +66,26 @@ for i = 1:time_steps + 1
     % 获取每个平台的每个目标信息
     for j = 1:numOfPlatForm % 遍历平台
         for k = 1 : numOfSource % 遍历声源
-            sourceAll(k) = sourceAll(k).updatePosition(delta_time);
-            [angle, ~, t_delay, type, fre] = platFormAll(j).getTargetInfo(sourceAll(k));
-            t_Num = round(t_delay / delta_time) + i; % 放到此时刻传播时延之前的时刻
-            target_info_matrix{j, t_Num, k} = struct('angle', angle, 'type', type, 'fre', fre);  %
-%             如果数据多就采用结构体
+            if i == 1
+%                 angR{j} = repmat(struct('angle', [], 'type', [], 'fre', []), T_all, numOfSource);
+                angR{j} = nan(T_all, numOfSource); % 现在只用来存放方位信息
+
+                [angle, ~, t_delay, type, fre] = platFormAll(j).getTargetInfo(sourceAll(k));
+                t_Num = round(t_delay / dt) + i; % 放到此时刻传播时延之前的时刻
+                target_info_matrix{j, t_Num, k} = struct('angle', angle, 'type', type, 'fre', fre);  %
+                angR{j}(t_Num, k) = struct('angle', angle, 'type', type, 'fre', fre);
+            else
+                sourceAll(k) = sourceAll(k).updatePosition(dt);
+                [angle, ~, t_delay, type, fre] = platFormAll(j).getTargetInfo(sourceAll(k));
+                t_Num = round(t_delay / dt) + i; % 放到此时刻传播时延之前的时刻
+                target_info_matrix{j, t_Num, k} = struct('angle', angle, 'type', type, 'fre', fre);  %
+%                 angR{j}(t_Num, k) = struct('angle', angle, 'type', type, 'fre', fre);
+                angR{j}(t_Num, k) = angle;
+
+            %             如果数据多就采用结构体
 %             
 %             target_info_matrix{j, t_Num, k} = angle;
-
+            end
         end
     end
 end
@@ -73,7 +97,7 @@ for i = 1 : 10
 end
 for i = 1 : 10
     i
-    disp(target_info_matrix{1, i, 2});
+    disp(angR{1}(i, 1));
 end
 
 %% 
