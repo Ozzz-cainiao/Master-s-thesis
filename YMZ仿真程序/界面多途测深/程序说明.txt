@@ -1,0 +1,4 @@
+duotu_danjiyuan：界面多途测深单基元，目标深度固定，水平位置变化时的定位误差
+duotu_danjiyuan_depth：界面多途测深单基元，目标水平位置固定，深度变化时的定位误差
+duotu_sijiyuan：界面多途测深四基元，目标深度固定，水平位置变化时的定位误差
+duotu_sijiyuan_depth：界面多途测深四基元，标水平位置固定，深度变化时的定位误差

@@ -1,0 +1,3 @@
+shiJianGuanLian：时间关联仿真、
+AngleCross函数：两基元方位交汇解算
+MovingAverage函数：滑动平均函数

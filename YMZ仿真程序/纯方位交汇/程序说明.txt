@@ -1,0 +1,3 @@
+angle_two_beacon：两基元纯方位交汇解算定位误差分布
+angle_four_beacon：四基元纯方位交汇解算定位误差分布
+AngleCross函数：用于angle_four_beacon中，两基元纯方位交汇解算
