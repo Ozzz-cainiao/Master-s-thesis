@@ -25,7 +25,7 @@ classdef Platform
 
         % 获取目标信息的方法  在这里加上传播时延
         function [angle, distance, t_delay, type, fre] = getTargetInfo(obj, target)
-            relative_position = target.Position - obj.position;
+            relative_position = target.Position(end, :) - obj.position(end, :); % 从最后一个数据中更新
 %             disp(relative_position);
             distance = norm(relative_position);
             angle = atan2d(relative_position(2), relative_position(1)); % 与x正的夹角

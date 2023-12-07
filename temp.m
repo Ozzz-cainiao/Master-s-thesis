@@ -23,3 +23,41 @@ eq23 = eq2 - eq3;
 eq = [eq1, eq2, eq3];
 solutions = solve(eq, [xs, ys, ts]);
 
+
+%% 生成对应的信号
+
+
+fs = 48000; % 采样频率 (Hz)
+duration = 1; % 信号持续时间 (秒)
+t = 0:1/fs:duration-1/fs; % 时间向量
+
+% 生成线谱信号 (350 Hz, 400 Hz, 450 Hz, 500 Hz)
+signal = sin(2*pi*350*t) + sin(2*pi*400*t) + sin(2*pi*450*t) + sin(2*pi*500*t);
+
+% 生成初步噪声
+noise = randn(size(t));
+
+% 设计一个带通滤波器 (300-600 Hz)
+[b, a] = butter(4, [300, 600]/(fs/2), 'bandpass');
+filtered_noise = filter(b, a, noise);
+
+% 计算信号和噪声的功率
+signal_power = rms(signal)^2;
+noise_power = rms(filtered_noise)^2;
+
+% 调整噪声的功率以实现-20 dB的信噪比
+desired_snr = -20; % dB
+desired_noise_power = signal_power / (10^(desired_snr / 10));
+adjusted_noise = filtered_noise * sqrt(desired_noise_power / noise_power);
+
+% 叠加信号和噪声
+combined_signal = signal + adjusted_noise;
+
+% 绘制信号和噪声叠加后的波形
+plot(t, combined_signal);
+title('Combined Signal with SNR = -20 dB');
+xlabel('Time (s)');
+ylabel('Amplitude');
+grid on;
+
+
