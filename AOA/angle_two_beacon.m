@@ -2,7 +2,7 @@ close all
 clear 
 clc
 
-%% ²ÎÊıÉèÖÃ
+%% å‚æ•°è®¾ç½®
 x1 = -500;
 y1 = 0;
 z1 = 0;
@@ -13,23 +13,23 @@ z2 = 0;
 
 diedai = 1000;
 
-%% Îó²îÉèÖÃ
+%% è¯¯å·®è®¾ç½®
 std_p = 1.5;
 delta_x1 = normrnd(0, std_p, 1, diedai);
 delta_y1 = normrnd(0, std_p, 1, diedai);
 delta_x2 = normrnd(0, std_p, 1, diedai);
 delta_y2 = normrnd(0, std_p, 1, diedai);
 
-std_angle = 1 / 180 * pi; %µ¥Î»Îªpi
+std_angle = 1 / 180 * pi; %å•ä½ä¸ºpi
 delta_angle1 = normrnd(0, std_angle, 1, diedai);
 delta_angle2 = normrnd(0, std_angle, 1, diedai);
 
 % pos_x1 = x1 + delta_x1;
-% pos_y1 = y1 + delta_y1; %100´Îµü´ú
+% pos_y1 = y1 + delta_y1; %100æ¬¡è¿­ä»£
 % pos_x2 = x2 + delta_x2;
 % pos_y2 = y2 + delta_y2;
 
-%% ´¿·½Î»½»»ã¶¨Î»
+%% çº¯æ–¹ä½äº¤æ±‡å®šä½
 n = size(x);
 delta_R = zeros(n(1), n(2));
 for p = 1:n(1)
@@ -39,17 +39,17 @@ for p = 1:n(1)
             pos_x1 = x1 + delta_x1(s);
             pos_y1 = y1 + delta_y1(s);
             pos_x2 = x2 + delta_x2(s);
-            pos_y2 = y2 + delta_y2(s); %GPS²âµÃÁ½¸öÆ½Ì¨Î»ÖÃ
+            pos_y2 = y2 + delta_y2(s); %GPSæµ‹å¾—ä¸¤ä¸ªå¹³å°ä½ç½®
 
-            L = sqrt((pos_x1 - pos_x2)^2+(pos_y1 - pos_y2)^2); %»ùÏß³¤¶È
+            L = sqrt((pos_x1 - pos_x2)^2+(pos_y1 - pos_y2)^2); %åŸºçº¿é•¿åº¦
 
-            beta = abs(atan((pos_y2 - pos_y1)/(pos_x2 - pos_x1))); %»ùÏßÓëÕı¶«·½Ïò¼Ğ½Ç ¾ø¶ÔÖµ ÒÔpiÎªµ¥Î»
+            beta = abs(atan((pos_y2 - pos_y1)/(pos_x2 - pos_x1))); %åŸºçº¿ä¸æ­£ä¸œæ–¹å‘å¤¹è§’ ç»å¯¹å€¼ ä»¥piä¸ºå•ä½
 
             alpha1 = atan2(x(p, q)-pos_x1, y(p, q)-pos_y1) + delta_angle1(s);
-            alpha2 = atan2(x(p, q)-pos_x2, y(p, q)-pos_y2) + delta_angle2(s); %²âµÃµÄÄ¿±ê·½Î»½Ç µ¥Î»Îªpi Õı±±Îª»ù×¼ Ë³Ê±ÕëÎªÕı ÄæÊ±ÕëÎª¸º
+            alpha2 = atan2(x(p, q)-pos_x2, y(p, q)-pos_y2) + delta_angle2(s); %æµ‹å¾—çš„ç›®æ ‡æ–¹ä½è§’ å•ä½ä¸ºpi æ­£åŒ—ä¸ºåŸºå‡† é¡ºæ—¶é’ˆä¸ºæ­£ é€†æ—¶é’ˆä¸ºè´Ÿ
 
             R1 = L * abs(cos(alpha2+beta)/sin(alpha2-alpha1));
-            R2 = L * abs(cos(alpha1+beta)/sin(alpha2-alpha1)); %¼ÆËãµÃµ½µÄÆ½Ì¨µ½Ä¿±êµÄ¾àÀë
+            R2 = L * abs(cos(alpha1+beta)/sin(alpha2-alpha1)); %è®¡ç®—å¾—åˆ°çš„å¹³å°åˆ°ç›®æ ‡çš„è·ç¦»
 
             xx1 = pos_x1 + R1 * sin(alpha1);
             xx2 = pos_x2 + R2 * sin(alpha2);
@@ -65,7 +65,7 @@ for p = 1:n(1)
     end
 end
 
-%% »­Í¼
+%% ç”»å›¾
 figure
 x_range = -1000:10:1000;
 y_range = -1000:10:1000;
@@ -75,9 +75,9 @@ hold on;
 clim([min(delta_R(:)), 100]);
 view([0, 90]);
 shading interp
-xlabel('xÖá/m', 'FontSize', 14);
-ylabel('yÖá/m', 'FontSize', 14);
-% title('´¿·½Î»½»»ã¶¨Î»½âËãÎó²î');
+xlabel('xè½´/m', 'FontSize', 14);
+ylabel('yè½´/m', 'FontSize', 14);
+% title('çº¯æ–¹ä½äº¤æ±‡å®šä½è§£ç®—è¯¯å·®');
 
 % h=pcolor(x,y,delta_R);hold on;
 plot(x1, y1, 'r*', x2, y2, 'r*');

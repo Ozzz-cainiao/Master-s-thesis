@@ -2,14 +2,14 @@ function res = AngleCross(pos1, pos2, angle1, angle2)
 pos_x1 = pos1(1);
 pos_y1 = pos1(2);
 pos_x2 = pos2(1);
-pos_y2 = pos2(2); %GPS²âµÃÁ½¸öÆ½Ì¨Î»ÖÃ
+pos_y2 = pos2(2); %GPSæµ‹å¾—ä¸¤ä¸ªå¹³å°ä½ç½®
 
-L = sqrt((pos_x1 - pos_x2)^2+(pos_y1 - pos_y2)^2); %»ùÏß³¤¶È
+L = sqrt((pos_x1 - pos_x2)^2+(pos_y1 - pos_y2)^2); %åŸºçº¿é•¿åº¦
 
-beta = abs(atan((pos_y2 - pos_y1)/(pos_x2 - pos_x1))); %»ùÏßÓëÕı¶«·½Ïò¼Ğ½Ç ¾ø¶ÔÖµ ÒÔpiÎªµ¥Î»
+beta = abs(atan((pos_y2 - pos_y1)/(pos_x2 - pos_x1))); %åŸºçº¿ä¸æ­£ä¸œæ–¹å‘å¤¹è§’ ç»å¯¹å€¼ ä»¥piä¸ºå•ä½
 
 R1 = L * abs(cos(angle2+beta)/sin(angle2-angle1));
-R2 = L * abs(cos(angle1+beta)/sin(angle2-angle1)); %¼ÆËãµÃµ½µÄÆ½Ì¨µ½Ä¿±êµÄ¾àÀë
+R2 = L * abs(cos(angle1+beta)/sin(angle2-angle1)); %è®¡ç®—å¾—åˆ°çš„å¹³å°åˆ°ç›®æ ‡çš„è·ç¦»
 
 xx1 = pos_x1 + R1 * sin(angle1);
 xx2 = pos_x2 + R2 * sin(angle2);

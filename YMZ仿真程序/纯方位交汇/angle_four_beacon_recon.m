@@ -2,68 +2,48 @@ close all
 clear
 clc
 
-%% ²ÎÊıÉè¼Æ
+%% å‚æ•°è®¾è®¡
 [x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4, z] = deal(500, 500, 0, ...
                                                             500, -500, 0, ...
                                                             -500, -500, 0, ...
                                                             -500, 500, 0, 0);
 
 
-[x, y] = meshgrid((-500:5:500)); %Ä¿±êÒÆ¶¯·¶Î§
+[x, y] = meshgrid((-500:5:500)); %ç›®æ ‡ç§»åŠ¨èŒƒå›´
 diedai = 1000;
 
-%% Îó²îÉèÖÃ
+%% è¯¯å·®è®¾ç½®
 std_p = 1.5;
 delta = normrnd(0, std_p, 8, diedai);
-for i = 1:4
-    eval(['delta_x' num2str(i) ' = delta(' num2str(2*i-1) ', :);']);
-    eval(['delta_y' num2str(i) ' = delta(' num2str(2*i) ', :);']);
-end
 
+std_angle = 1 / 180 * pi; % å•ä½ä¸ºpi
+delta_angles = normrnd(0, std_angle, 4, diedai);
 
-std_angle = 1 / 180 * pi; %µ¥Î»Îªpi
-delta_angle1 = normrnd(0, std_angle, 1, diedai);
-delta_angle2 = normrnd(0, std_angle, 1, diedai);
-delta_angle3 = normrnd(0, std_angle, 1, diedai);
-delta_angle4 = normrnd(0, std_angle, 1, diedai);
+jiao = atan2(160, 500); %æ®åŒåŸºå…ƒè®¾ç½®è¯¯å·®è§’åº¦ åœ¨è§’åº¦ä¹‹å¤–çš„æ‰å‚ä¸è§£ç®—
 
-jiao = atan2(160, 500); %¾İË«»ùÔªÉèÖÃÎó²î½Ç¶È ÔÚ½Ç¶ÈÖ®ÍâµÄ²Å²ÎÓë½âËã
-
-%% ´¿·½Î»½»»ã¶¨Î»
+%% çº¯æ–¹ä½äº¤æ±‡å®šä½
 n = size(x);
-
+delta_R = zeros(n);
 for p = 1:n(1)
     for q = 1:n(2)
+        delta_r = zeros(1, diedai);
         for s = 1:diedai
-            pos_x1 = x1 + delta_x1(s);
-            pos_y1 = y1 + delta_y1(s);
-            pos_x2 = x2 + delta_x2(s);
-            pos_y2 = y2 + delta_y2(s);
-            pos_x3 = x3 + delta_x3(s);
-            pos_y3 = y3 + delta_y3(s);
-            pos_x4 = x4 + delta_x4(s);
-            pos_y4 = y4 + delta_y4(s);
+            pos = [x1 + delta(1, s), y1 + delta(2, s), z1;
+                x2 + delta(3, s), y2 + delta(4, s), z2;
+                x3 + delta(5, s), y3 + delta(6, s), z3;
+                x4 + delta(7, s), y4 + delta(8, s), z4];
 
-            pos1 = [pos_x1, pos_y1, z1];
-            pos2 = [pos_x2, pos_y2, z2];
-            pos3 = [pos_x3, pos_y3, z3];
-            pos4 = [pos_x4, pos_y4, z4]; %GPS²âµÃËÄ¸öÆ½Ì¨Î»ÖÃ
-
-            alpha1 = atan2(x(p, q)-pos_x1, y(p, q)-pos_y1) + delta_angle1(s);
-            alpha2 = atan2(x(p, q)-pos_x2, y(p, q)-pos_y2) + delta_angle2(s);
-            alpha3 = atan2(x(p, q)-pos_x3, y(p, q)-pos_y3) + delta_angle3(s);
-            alpha4 = atan2(x(p, q)-pos_x4, y(p, q)-pos_y4) + delta_angle4(s); %²âµÃµÄÄ¿±ê·½Î»½Ç µ¥Î»Îªpi Õı±±Îª»ù×¼ Ë³Ê±ÕëÎªÕı ÄæÊ±ÕëÎª¸º
-
-            array_alpha = [alpha1, alpha2, alpha3, alpha4]; %ËÄ¸ö½Ç ÁùÖÖ×éºÏ
-            array_pos = [pos1; pos2; pos3; pos4]; %ËÄ¸ö¸¡±êÎ»ÖÃ ÁùÖÖ×éºÏ
+            alpha = atan2(x(p, q) - pos(:, 1), y(p, q) - pos(:, 2)) + delta_angles(:, s);
+%             array_alpha = [alpha1, alpha2, alpha3, alpha4]; %å››ä¸ªè§’ å…­ç§ç»„åˆ
+%             array_pos = [pos1; pos2; pos3; pos4]; %å››ä¸ªæµ®æ ‡ä½ç½® å…­ç§ç»„åˆ
             num_res = 1;
             index = [];
 
             for i_alpha = 1:4
                 for j_alpha = 1:4
                     if j_alpha > i_alpha
-                        if abs(array_alpha(i_alpha)-array_alpha(j_alpha)) > jiao
-                            res(num_res, :) = AngleCross(array_pos(i_alpha, :), array_pos(j_alpha, :), array_alpha(i_alpha), array_alpha(j_alpha));
+                        if abs(alpha(i_alpha)-alpha(j_alpha)) > jiao
+                            res(num_res, :) = AngleCross(pos(i_alpha, :), pos(j_alpha, :), alpha(i_alpha), alpha(j_alpha));
                             index = [index; res(num_res, :)];
                             num_res = num_res + 1;
                         end
@@ -84,7 +64,7 @@ for p = 1:n(1)
                 lisan(i, 2) = index(i, 2);
                 lisan(i, 3) = sqrt((index(i, 1) - x(p, q))^2+(index(i, 2) - y(p, q))^2);
             end
-            paixu = sortrows(lisan, 3); %ÉıĞòÅÅÁĞ
+            paixu = sortrows(lisan, 3); %å‡åºæ’åˆ—
             for i = 1:3
                 sum_x = sum_x + paixu(i, 1);
                 sum_y = sum_y + paixu(i, 2);
@@ -98,7 +78,7 @@ for p = 1:n(1)
     end
 end
 
-%% »­Í¼
+%% ç”»å›¾
 figure
 h = pcolor(x, y, delta_R);
 hold on;
@@ -107,6 +87,6 @@ hold on;
 set(h, 'edgecolor', 'none', 'facecolor', 'interp');
 colorbar;
 % caxis([0 35]);
-xlabel('xÖá/m', 'FontSize', 14);
-ylabel('yÖá/m', 'FontSize', 14);
-% title('´¿·½Î»½»»ã¶¨Î»½âËãÎó²î');
+xlabel('xè½´/m', 'FontSize', 14);
+ylabel('yè½´/m', 'FontSize', 14);
+% title('çº¯æ–¹ä½äº¤æ±‡å®šä½è§£ç®—è¯¯å·®');
