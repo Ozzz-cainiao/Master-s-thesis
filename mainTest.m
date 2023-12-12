@@ -98,11 +98,34 @@ for i = 1:T_num
                 t_Num = round(t_delay/dt) + i; % 放到此时刻传播时延之前的时刻
                 target_info_matrix{j, t_Num, k} = struct('angle', angle, 'type', type, 'fre', fre); %
                 %                 angR{j}(t_Num, k) = struct('angle', angle, 'type', type, 'fre', fre);
-                angR{j}(t_Num, k) = angle + sqrt(var2d)* randn;
+                angR{j}(t_Num, k) = angle + sqrt(var2d)* randn; % 这个结果是度
             end
+        end % for k = 1:numOfSource % 遍历声源
+    end % for j = 1:numOfPlatForm % 遍历平台
+
+
+    % 假如在这里加上实时定位呢
+
+    % 先不加时空关联
+    % 先获取当前时刻的角度矩阵
+    if i == 10
+        % 获取角度和平台位置
+        angle = zeros(1, numOfPlatForm);
+        pos = zeros(numOfSource, 2);
+        for j = 1 : numOfPlatForm
+            angle(j) = angR{j}(i, 1) / 180 * pi; % 变成弧度
+            pos(j, :) = platFormAll(j).position;
         end
+        % 获取平台位置
+        
+        AOARaw(angle , pos);
+
     end
-end
+
+end  % for i = 1:T_num
+
+
+
 % % 下方是初始的信息获取
 % for i = 1:T_num
 %     % 获取每个平台的每个目标信息
@@ -187,7 +210,7 @@ a = 10
 
 %% 分层关联
 
-%% 实现纯方位交汇定位
+%% 实现纯方位交汇定位 经典写法
 
 %% 实现双曲面交汇定位
 

@@ -29,7 +29,7 @@ classdef Platform
 %             disp(relative_position);
             distance = norm(relative_position);
             angle = atan2d(relative_position(2), relative_position(1)); % 与x正的夹角
-            angle(angle < 0) = angle(angle  < 0) + 360;
+%             angle(angle < 0) = angle(angle  < 0) + 360;
             t_delay = distance / obj.c;
             type = target.Type; % 获得信号类型
             if strcmp(type, 'CW')
