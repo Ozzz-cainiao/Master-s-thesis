@@ -35,8 +35,8 @@ Mt = matlabFunction(A_Mt);
 
 clearvars -except M Mt M1 M2 Mc
 
-x = 0:1:2000;
-y = (0:1:2000)';
+x = 0:10:2000;
+y = (0:10:2000)';
 
 % [x1, y1, x2, y2] = deal(300, 1000, 1700, 1000); %% 平台位置
 [x1, y1, x2, y2] = deal(500, 1000, 1500, 1000); %% 平台位置
@@ -48,7 +48,7 @@ y = (0:1:2000)';
 % errornor = [0.01,0.01,0];
 % errornor = [2^2,2^2,0.001^2,0];      % dx^2 dy^2 t1^2 c^2 误差
 % errornor = [2^2,2^2,0.001^2,1.5^2];      % dx^2 dy^2 t1^2 c^2 误差
-errornor = [2^2, 2^2, 0.001^2, 3^2]; % dx^2 dy^2 t1^2 c^2 误差
+errornor = [2^2, 2^2, 0.002^2, 1.5^2]; % dx^2 dy^2 t1^2 c^2 误差
 
 errorsum = zeros(lenx, leny);
 c = 1500;
@@ -58,8 +58,7 @@ for ii = 1:lenx
         m1 = M1(x1, x(ii), y1, y(jj));
         m2 = M2(x2, x(ii), y2, y(jj));
 %         mc = Mc(n1, n2, t1, t2, ta, ts);
-        t1 = sqrt((x1 - x(ii))^2 + (y1 - y(jj))^2) / c;
-        t2 = sqrt((x2 - x(ii))^2 + (y2 - y(jj))^2) / c;
+        t1 = sqrt((x1 - x(ii))^2 + )
         mc = Mc(t1, t2, ta);
 
         m = M(x1, x2, x(ii), y1, y2, y(jj));
