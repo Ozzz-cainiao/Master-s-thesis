@@ -19,7 +19,7 @@ T = 1; %观测周期
 T_all = 50; %观测时间
 T_num = T_all / T; %观测次数
 dt = T; % 观测周期
-var2d   = 1.5^2 ;
+var2d   = 1.5^2 ; % 角度制  角度误差
 
 %% 创建平台
 platform1 = Platform([0, 0]);
@@ -104,21 +104,19 @@ for i = 1:T_num
     end % for j = 1:numOfPlatForm % 遍历平台
 
 
-    % 假如在这里加上实时定位呢
+    % 在这里拆分目标
 
-    % 先不加时空关联
-    % 先获取当前时刻的角度矩阵
-    if i == 10
+    
+    % 在这里实时定位
+
+
+    if i > 9
         % 获取角度和平台位置
-        angle = zeros(1, numOfPlatForm);
-        pos = zeros(numOfSource, 2);
-        for j = 1 : numOfPlatForm
-            angle(j) = angR{j}(i, 1) / 180 * pi; % 变成弧度
-            pos(j, :) = platFormAll(j).position;
-        end
-        % 获取平台位置
+
+
         
-        AOARaw(angle , pos);
+
+        SpaceTimeCorrelation();
 
     end
 

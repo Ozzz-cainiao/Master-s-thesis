@@ -21,7 +21,7 @@ y = (Ymin:Step:Ymax)';
 
 [lenx, leny] = deal(length(x), length(y));
 errorsum = zeros(lenx, leny);
-
+len = length(arrx);
 % theta = zeros(5, lenx, leny);
 theta = zeros(length(arrx), lenx, leny);
 % [theta1, theta2, theta3, theta4, theta5] = deal(zeros(, leny));
@@ -39,24 +39,27 @@ diagerrorxy =  diag([errornor(1), errornor(2)]);
 
 for ii = 1:lenx
     for jj = 1:leny
-        mx = zeros(length(arrx), 2);
-        for kk = 1:length(arrx)
-            m(kk, 1, ii, jj) = cos(theta(kk, ii, jj));
-            m(kk, 2, ii, jj) = -sin(theta(kk, ii, jj));
+        mx = zeros(len, 2);
+        m = zeros(len, 2);
+        for kk = 1:len
+%             m(kk, 1) = cos(theta(kk, ii, jj));
+%             m(kk, 2) = -sin(theta(kk, ii, jj));
             mtheta(kk, kk) = arry(kk) .* cos(theta(kk, ii, jj)) - y(jj) .* cos(theta(kk, ii, jj)) + arrx(kk) .* sin(theta(kk, ii, jj)) - x(ii) .* sin(theta(kk, ii, jj));
-            mx(kk,:) = [m(kk, 1, ii, jj), m(kk, 2, ii, jj)];
+            mx(kk,:) = [cos(theta(kk, ii, jj)), -sin(theta(kk, ii, jj));];
             
         end
+        m = -1 .* mx;
         %         xxx=mtheta * diagerror * mtheta';
-        error1 = (m(:, :, ii, jj)' * m(:, :, ii, jj)) \ m(:, :, ii, jj)';
+        error1 = (m' *m) \ m';
 %         error2 = mtheta * diagerror * mtheta';
         error2 = mtheta * diagerror * mtheta';
-        for kk = 1 : length(arrx)
-            error2 = error2 +  mx(kk) * diagerrorxy * mx(kk)';
+        error3 = zeros(len, len);
+        for kk = 1 : len
+            error3 = error3 +  mx(kk,:) * diagerrorxy * mx(kk,:)';
         end
- 
-        error2_1 = (error2 * m(:, :, ii, jj) / ...
-            (m(:, :, ii, jj)' * m(:, :, ii, jj)));
+        error4 = error3 + error2;
+        error2_1 = (error4 * m / ...
+            (m' * m));
         error = error1 * error2_1;
         %         error = (m(:,:,ii,jj)' * m(:,:,ii,jj)) \ m(:,:,ii,jj)'...
         %             * (xxx * m(:,:,ii,jj) / ...
@@ -67,18 +70,19 @@ end
 
 figure
 surf(x, y, abs(errorsum));
+if (max(abs(errorsum)) > 100)
+    clim([0, 100]);
+    mean2(abs(errorsum(1:100, :)))
+end
 view(0,90);
 set(gca, 'YDir', 'normal');
 colorbar;
 xlabel('x/m');
 ylabel('y/m');
 title('平面角解算误差');
-clim([0, 10]);
+clim([0, 50]);
 colormap jet;
 shading interp;
 hold on;
 plot(arrx, arry, 'r*');
-if (max(abs(errorsum)) > 100)
-    clim([0, 100]);
-    mean2(abs(errorsum(1:100, :)))
-end
+mean2(abs(errorsum(1:100, :)))

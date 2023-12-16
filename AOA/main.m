@@ -15,16 +15,18 @@ close all
 % function []=AccuracyAnalysis(xy,Xmin,Xmax,Ymin,Ymax,Step)
 % function [] = Analysis2(arrx, arry, Xmin, Xmax, Ymin, Ymax, Step, errornor)
 
-arrx=[500,1500];
-arry=[1000,1000];
+% arrx=[500,1500];
+% arry=[1000,1000];
 % arrx=[1700,300,1700];
 % arry=[300,500,1000];
-% arrx=[0,2000,2000,0];
-% arry=[0,0,2000,2000];
-% errornor = [0, 0, (1 / 180 * pi)^2]; %
-errornor = [5^2, 5^2, 0]; %
+arrx=[0,2000,2000,0];
+arry=[0,0,2000,2000];
+errornor = [4, 4, (1 / 180 * pi)^2]; %
+% errornor = [3, 3, (1 / 180 * pi)^2]; %
+% errornor = [3^2, 3^2, (1 / 180 * pi)^2]; %
 
-errornor1=(0.2 / 180 * pi)^2;%度换成弧度
+
+% errornor1=(0.2 / 180 * pi)^2;%度换成弧度
 
 Analysis2(arrx,arry,0,2000,0,2000,10,errornor);
 % AccuracyAnalysis(list,0,2000,0,2000,10,errornor);

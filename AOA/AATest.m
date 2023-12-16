@@ -1,4 +1,4 @@
-%% 纯方位定位误差推导 带测量平添误差
+%% 5平台纯方位定位误差推导 带测量平台误差
 %
 clc
 clear
@@ -41,7 +41,7 @@ y = (0:10:2000)';
 
 [lenx, leny] = deal(length(x), length(y));
 
-errornor = [0, 0, (0.2 / 180 * pi)^2]; % 横 纵 角均方根误差
+errornor = [0, 0, (1.5 / 180 * pi)^2]; % 横 纵 角均方根误差
 theta1 = atan((x1 - x)./(y1 - y));
 theta2 = atan((x2 - x)./(y2 - y));
 theta3 = atan((x3 - x)./(y3 - y));
@@ -78,6 +78,6 @@ colorbar;
 xlabel('x/m');
 ylabel('y/m');
 title('平面角解算误差');
-caxis([0, 15]); colormap jet
+caxis([0, 50]); colormap jet
 shading interp;view(0,90)
 mean2(abs(errorsum(1:100, :)))
