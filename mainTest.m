@@ -70,9 +70,7 @@ source4 = SoundSource('CW', [1e3, 2e3], [100, 500], initial_position4, velocity4
 
 sourceAll = [source1, source2, source3, source4];
 
-%%
-
-% 创建一个多维矩阵来存储目标信息
+%% 创建一个多维矩阵来存储目标信息
 % 维度1：平台，维度2：时刻，维度3：目标
 numOfPlatForm = size(platFormAll, 2);
 numOfSource = size(sourceAll, 2);
