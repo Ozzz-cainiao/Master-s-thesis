@@ -56,7 +56,6 @@ classdef Platform
         % 获取目标信息的方法  在这里加上传播时延
         function [angle, distance, t_delay, type, fre, obj] = getTargetInfoFre(obj, target, dt, k, b)
             % 根据输入参数调用
-
             obj.t = obj.t + dt;
             %             obj.t = [obj.t; obj.t(end, :) + dt]
             relative_position = target.Position(end, :) - obj.position(end, :); % 从最后一个数据中更新
@@ -74,14 +73,16 @@ classdef Platform
                 % 这个t是累计运行时间，需要再加一个特性
                 % 需要计算以当前平台为新原点坐标系的x0,y0
                 % 计算角度
-                theta = atan(k);
+                theta = atan(k); % 返回弧度值
                 % 需要已知目标运动方程
                 y0 = -(obj.position(2) - (k * obj.position(1) + b)) * cos(theta); % 这个是正确的
                 x0 = target.Position(1, 1) * cos(theta) + target.Position(1, 2) * sin(theta) ...
                     -obj.position(1) * cos(theta) - obj.position(2) * sin(theta);
 
-                v = sqrt(target.Velocity(1).^2+target.Velocity(2).^2);
-%                 v = target.Velocity(1);
+                v = sqrt(target.Velocity(end, 1).^2+target.Velocity(end, 2).^2);
+
+                %                 v = 8;
+                %                 v = target.Velocity(1);
                 fre = target.Frequency - target.Frequency * (v * (x0 + v * obj.t) ...
                     / obj.c / sqrt((x0 + v * obj.t)^2+y0^2));
             else

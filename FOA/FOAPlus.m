@@ -5,6 +5,8 @@
 % 联系方式: Liminzhang7@outlook.com
 % 日期: 2023-12-19
 % 描述: SZY 2.3.4仿真
+%       参考论文邹男，于金正，桑志远，李娜，苏薪元，杨嘉轩，惠云梦．
+%       非合作线谱声源 分布式定位方法[J/OL]．应用声学.
 % 输入:
 % 输出:
 %**************************************************************************
@@ -13,7 +15,7 @@ clear
 close all
 
 %% 观测数据
-T = 0.5; % 观测周期
+T = 0.2; % 观测周期
 dt = T;
 T_all = 300; % 观测总时间
 T_num = T_all / T;
@@ -38,7 +40,7 @@ F2 = [0.5 * T^2, 0; ...
 %% 创建观测平台对象
 platform1 = Platform([0, 0]);
 platform2 = Platform([1200, 0]);
-platform3 = Platform([1200, 1000]);
+platform3 = Platform([1200, 1e3]);
 platform4 = Platform([0, 1e3]);
 
 %% 创建运动的声源对象
@@ -46,7 +48,7 @@ initial_position1 = [-500, 1000]; % 初始位置目标1
 v = 8;
 slope = -0.5;
 % slope = 0;
-velocity1 = [v * cos(atan(slope)), v * sin(atan(slope))] % 运动速度（假设在 x 轴上匀速运动）
+velocity1 = [v * cos(atan(slope)), v * sin(atan(slope))]; % 运动速度（假设在 x 轴上匀速运动）
 acc1 = 0; % 加速度
 % source1 = SoundSource('CW', [2e3], [100], initial_position1, velocity1, acc1);
 source1 = SoundSource('CW', 1e3, 100, initial_position1, velocity1, F1, F2, acc1);
@@ -57,7 +59,7 @@ x0 = initial_position1(1); % 起始位置的x坐标
 y0 = initial_position1(2); % 起始位置的y坐标
 
 % 计算一般方程的系数
-A = -slope;
+% A = -slope;
 B = 1;
 C = slope * x0 - y0;
 
@@ -137,11 +139,11 @@ for i = 1:numOfPlatForm
     % 设置信赖域算法的迭代参数
     options.MaxIterations = 400;
     [xx{i}, resnorm, residual, exitflag, output] = lsqcurvefit(myfun, initialGuess, tt, FFre, lb, ub, options);
-    xx(i);
-%     disp(output);
+    
+    %     disp(output);
 
-    figure
-    plot(FFre);
+%     figure
+%     plot(FFre);
     times = linspace(tt(1), tt(end));
     figure
     plot(tt, FFre, 'ko', times, myfun(cell2mat(xx(i)), times), 'b-')
@@ -164,7 +166,7 @@ for i = 1:numOfPlatForm
     vv(i) = fd(2);
     ff(i) = fd(1);
 end
-vv
+% vv
 
 %% 开始计算目标运动参数
 A = [node(3, 1), -node(3, 2); ...
@@ -176,11 +178,44 @@ B{2} = [-d(3) / d(1) - 1, d(4) / d(1) - 1]';
 B{3} = [d(3) / d(1) - 1, -d(4) / d(1) - 1]';
 B{4} = [-d(3) / d(1) - 1, -d(4) / d(1) - 1]';
 res = zeros(numOfPlatForm, 2); % k, b
+selectIndex = [1, 3, 4]; % 参与解算的观测平台
 % 使用最小二乘法计算
+Epsilon = zeros(numOfPlatForm, 1);
 for i = 1:numOfPlatForm
     X{i} = inv(A'*A) * A' * cell2mat(B(i));
-    res(i, 1) = X{i}(2) / X{i}(1); % k
+    k = X{i}(1) / X{i}(2);
+    b = 1 / X{i}(2);
+    res(i, 1) = X{i}(1) / X{i}(2); % k
     res(i, 2) = 1 / X{i}(2); % b
+    dis = zeros(numOfPlatForm, 1);
+
+    % 求1，3，4点到直线的距离
+    for j = 1 : numOfPlatForm
+        dis(j) = pointToLineDistance(k, b, node(j, 1), node(j, 2));
+    end
+
+    % 解算点与距离之差的和
+    for j = 1 : length(selectIndex)
+        Epsilon(i) = abs(dis(selectIndex(j)) - d(selectIndex(j))) ;
+    end    
 end
 
-% 计算误差最小的作为结果
+% 找到Epsilon最小的索引，这一对k,b作为解算结果
+% 找到数组中的最小值
+minValue = min(Epsilon);
+
+% 找到最小值的索引
+minIndex = find(Epsilon == minValue);
+fprintf('估计频率为 %.2f，%.2f，%.2f，%.2f\n', ff(1), ff(2), ff(3), ff(4));
+fprintf('估计速度为 %.2f，%.2f，%.2f，%.2f\n', vv(1), vv(2), vv(3), vv(4));
+fprintf('估计距离为 %.2f，%.2f，%.2f，%.2f\n', d(1), d(2), d(3), d(4));
+fprintf('估计的k的值是 %.2f，b 的值是 %.2f\n', res(minIndex,1), res(minIndex,2));
+
+
+% 计算点到直线的距离
+function distance = pointToLineDistance(k, b, x0, y0)
+    numerator = abs(k*x0 - y0 + b);
+    denominator = sqrt(k^2 + 1);
+    distance = numerator / denominator;
+end
+

@@ -1,9 +1,39 @@
-%% FOA 目标运动轨迹设置
+%**************************************************************************
+% 文件名: E:\坚果云同步文件夹\毕设——非合作多目标定位\FinalCode\FOA\track.m
+% 版本: v1.0
+% 作者: ZLM
+% 联系方式: Liminzhang7@outlook.com
+% 日期: 2023-12-22
+% 描述: 输入k, b,和点的坐标，计算点到直线的距离
+% 输入:  
+% 输出:  
+%**************************************************************************
 
+%**************************************************************************
+% 文件名: E:\坚果云同步文件夹\毕设——非合作多目标定位\FinalCode\FOA\track.m
+% 版本: v1.0
+% 作者: ZLM
+% 联系方式: Liminzhang7@outlook.com
+% 日期: 2023-12-22
+% 描述: 输入k, b,和点的坐标，计算点到直线的距离
+% 输入:  
+% 输出:  
+%**************************************************************************
 
+%**************************************************************************
+% 文件名: E:\坚果云同步文件夹\毕设——非合作多目标定位\FinalCode\FOA\track.m
+% 版本: v1.0
+% 作者: ZLM
+% 联系方式: Liminzhang7@outlook.com
+% 日期: 2023-12-22
+% 描述: 输入k, b,和点的坐标，计算点到直线的距离
+% 输入:  
+% 输出:  
+%**************************************************************************
 clc
-clear
+clear 
 close all
+
 
 % 设置初始位置和速度
 initialPosition = [-500, 1000];
@@ -63,58 +93,11 @@ disp(['目标点坐标: (', num2str(targetPoint(1)), ', ', num2str(targetPoint(2
 disp(['最近点坐标: (', num2str(positions(minIndex, 1)), ', ', num2str(positions(minIndex, 2)), ')']);
 disp(['最短距离: ', num2str(minDistance), ' 米']);
 
+k = 0;
+b = 1;
+x0 = 3;
+y0 = 5;
 
-%%
-clc
-clear
-close all
-% 初始位置
-initialPosition = [-500, 1000];
-
-% 直线的斜率
-slope = -0.5;
-
-% 速度
-velocity = 10;
-
-% 模拟的时间
-simulationTime = 100;
-
-% 时间步长为1秒
-time = 0:1:simulationTime;
-
-% 根据直线方程计算y坐标
-y = velocity * sin(atan(-0.5))* (time - time(1)) + initialPosition(2);
-
-% 根据速度计算x坐标
-x = velocity * cos(atan(-0.5))* (time - time(1)) + initialPosition(1);
-
-% 绘制运动轨迹
-figure;
-plot(x, y, '-o', 'LineWidth', 1.5, 'MarkerSize', 8);
-hold on;
-scatter(initialPosition(1), initialPosition(2), 100, 'red', 'filled', 'MarkerEdgeColor', 'black');
-xlabel('X (m)');
-ylabel('Y (m)');
-title('Target Trajectory Simulation');
-grid on;
-legend('Target Trajectory', 'Initial Position', 'Location', 'Best');
-hold off;
-
-%%
-% 已知直线的起始位置和斜率
-x0 = 1; % 起始位置的x坐标
-y0 = 2; % 起始位置的y坐标
-slope = 3; % 斜率
-
-% 计算一般方程的系数
-A = -slope;
-B = 1;
-C = slope * x0 - y0;
-
-% 从一般方程中获取y轴上的截距
-y_intercept = -C / B;
-
-% 显示结果
-disp(['直线在y轴上的截距为: ' num2str(y_intercept)]);
+distance = pointToLineDistance(k, b, x0, y0);
+disp(distance);
 
