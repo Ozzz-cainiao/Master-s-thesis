@@ -129,7 +129,7 @@ options = optimoptions('lsqcurvefit');
 % 设置信赖域算法的迭代参数
 options.MaxIterations = 400;
 
-[xx, resnorm, residual, exitflag, output] = lsqcurvefit(fun, initialGuess, t, FFre, lb, ub, options);
+[xx, resnorm, residual, exitflag, output] = lsqcurvefit(myfun, initialGuess, t, FFre, lb, ub, options);
 xx
 disp(output)
 

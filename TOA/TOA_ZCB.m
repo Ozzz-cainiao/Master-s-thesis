@@ -35,11 +35,11 @@ Mt = matlabFunction(A_Mt);
 
 clearvars -except M Mt M1 M2 Mc
 
-x = 0:1:2000;
-y = (0:1:2000)';
+x = 0:2:2000;
+y = (0:2:2000)';
 
-% [x1, y1, x2, y2] = deal(300, 1000, 1700, 1000); %% 平台位置
-[x1, y1, x2, y2] = deal(500, 1000, 1500, 1000); %% 平台位置
+[x1, y1, x2, y2] = deal(300, 1000, 1700, 1000); %% 平台位置
+% [x1, y1, x2, y2] = deal(500, 1000, 1500, 1000); %% 平台位置
 
 [lenx, leny] = deal(length(x), length(y));
 % errornor = [0,0,0.01,0];
@@ -48,7 +48,11 @@ y = (0:1:2000)';
 % errornor = [0.01,0.01,0];
 % errornor = [2^2,2^2,0.001^2,0];      % dx^2 dy^2 t1^2 c^2 误差
 % errornor = [2^2,2^2,0.001^2,1.5^2];      % dx^2 dy^2 t1^2 c^2 误差
-errornor = [2^2, 2^2, 0.001^2, 3^2]; % dx^2 dy^2 t1^2 c^2 误差
+% errornor = [0^2,0^2,0.001^2,1.5^2];      % dx^2 dy^2 t1^2 c^2 误差
+errornor = [2^2,2^2,0.001^2,1.5^2];      % dx^2 dy^2 t1^2 c^2 误差
+% errornor = [2^2,2^2,0.001^2,1.5^2];      % dx^2 dy^2 t1^2 c^2 误差
+
+% errornor = [2^2, 2^2, 0.001^2, 3^2]; % dx^2 dy^2 t1^2 c^2 误差
 
 errorsum = zeros(lenx, leny);
 c = 1500;
@@ -86,6 +90,9 @@ colorbar;
 xlabel('x/m');
 ylabel('y/m');
 title('TOA平面角解算误差');
-clim([0, 50]); colormap jet
+clim([0, 20]); colormap jet
 shading interp;view(0,90)
-mean2(abs(errorsum(1:100, :))) % 除去基线行的平均测量误差
+% mean2(abs(errorsum(1:100, :))) % 除去基线行的平均测量误差
+% 使用nanmean计算非NaN值的平均值
+averageValue = nanmean(errorsum, 'all');
+fprintf('%.2f\n', averageValue); % 显示2位小数

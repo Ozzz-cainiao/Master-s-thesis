@@ -48,6 +48,18 @@ classdef Platform
                     ./ (1500 * sqrt((target.Position(1, 1) + target.Velocity(1) ...
                     .* obj.t).^2+target.Position(1, 2)^2)));
 
+                %                 % 现在假设是在做倾斜直线运动
+                %                 % 计算目标运动方向向量
+                %                 directionVector = target.Position(end, :) - target.Position(1, :);
+                %
+                %                 % 计算观测点指向目标的向量
+                %                 observationVector = obj.position - target.Position(end, :);
+                %                 % 计算夹角余弦值
+                %                 cosineAngles = dot(directionVector, observationVector) ...
+                %                     / (norm(directionVector) * norm(observationVector));
+                %                 % 计算总速度
+                %                 v = sqrt(target.Velocity(1)^2+target.Velocity(2)^2);
+                %                 fre = target.Frequency + target.Frequency * cosineAngles * v / obj.c;
             else
                 fre = 0; % 其它信号频率先设置为0
             end
@@ -67,23 +79,31 @@ classdef Platform
             t_delay = distance / obj.c;
             type = target.Type; % 获得信号类型
             if strcmp(type, 'CW')
-                % fre = target.Frequency; % 获得信号频率
+                %                 fre = target.Frequency; % 获得信号频率
                 % 如果目标做匀速或匀加速直线运动，则可以加上多普勒频移
                 % 为了简化问题，先假设目标做水平匀速运动 则多普勒频率就是这样计算 公式来源于
                 % 单水听器被动测距的信赖域最优化方法 式11
                 % 这个t是累计运行时间，需要再加一个特性
                 % 需要计算以当前平台为新原点坐标系的x0,y0
                 % 计算角度
+
                 theta = atan(k);
                 % 需要已知目标运动方程
                 y0 = -(obj.position(2) - (k * obj.position(1) + b)) * cos(theta); % 这个是正确的
-                x0 = target.Position(1, 1) * cos(theta) + target.Position(1, 2) * sin(theta) ...
-                    -obj.position(1) * cos(theta) - obj.position(2) * sin(theta);
+                %                 x0 = -sqrt((obj.position(1) - target.Position(end, 1))^2+(obj.position(2) - target.Position(end, 2))^2-y0^2);
+                %                 %                 x0 = sqrt((obj.position(1) - target.Position(1, 1))^2+(obj.position(2) - target.Position(1, 2))^2-y0^2);
+                x0 = target.Position(1, 1) * cos(theta) + target.Position(1, 2) * sin(theta) - obj.position(1) * cos(theta) - obj.position(2) * sin(theta);
+                %                 y0 = target.Position(1,1)*sin(theta) + target.Position(1,2)*cos(theta) + obj.position(2);
 
                 v = sqrt(target.Velocity(1).^2+target.Velocity(2).^2);
-%                 v = target.Velocity(1);
+
                 fre = target.Frequency - target.Frequency * (v * (x0 + v * obj.t) ...
-                    / obj.c / sqrt((x0 + v * obj.t)^2+y0^2));
+                    / (obj.c * sqrt((x0 + v * obj.t)^2+y0^2)));
+                %                 fre = target.Frequency - target.Frequency .* (target.Velocity(1) ...
+                %                     * (target.Position(1, 1) + target.Velocity(1) .* obj.t) ...
+                %                     ./ (1500 * sqrt((oi.Position(1, 1) + target.Velocity(1) ...
+                %                     .* obj.t).^2+target.Position(1, 2)^2)));
+
             else
                 fre = 0; % 其它信号频率先设置为0
             end

@@ -70,9 +70,9 @@ end
 
 figure
 surf(x, y, abs(errorsum));
-if (max(abs(errorsum)) > 100)
+if (max(abs(errorsum)) > 50)
     clim([0, 100]);
-    mean2(abs(errorsum(1:100, :)))
+    mean2(abs(errorsum(1:100, :)));
 end
 view(0,90);
 set(gca, 'YDir', 'normal');
@@ -85,4 +85,6 @@ colormap jet;
 shading interp;
 hold on;
 plot(arrx, arry, 'r*');
-mean2(abs(errorsum(1:100, :)))
+% 使用nanmean计算非NaN值的平均值
+averageValue = nanmean(errorsum, 'all');
+disp(averageValue);

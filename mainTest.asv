@@ -118,6 +118,10 @@ for j = 1:numOfPlatForm % 遍历平台
 
 end % for i = 1:T_num
 % ==========================进行时空关联定位===============================
+angM = cell(length(t_obs),S);
+for iii = 1:length(t_obs)
+    angM(iii,:) = arrayfun(@(s) angR{s}( ~isnan( sort( angR{s}(:,t_obs(1)/T+iii-1) ) ) ,t_obs(1)/T+iii-1) ,1:S,'un',0);
+end
 area = 0:1000:10e3;
 Dth = 500; % 交点距离约束
 d_min = 5; % 时空关联解算阈值

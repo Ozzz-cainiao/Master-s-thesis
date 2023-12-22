@@ -46,7 +46,7 @@ initial_position1 = [-500, 1000]; % 初始位置目标1
 v = 8;
 slope = -0.5;
 % slope = 0;
-velocity1 = [v * cos(atan(slope)), v * sin(atan(slope))] % 运动速度（假设在 x 轴上匀速运动）
+velocity1 = [v * cos(atan(slope)), v * sin(atan(slope))]; % 运动速度（假设在 x 轴上匀速运动）
 acc1 = 0; % 加速度
 % source1 = SoundSource('CW', [2e3], [100], initial_position1, velocity1, acc1);
 source1 = SoundSource('CW', 1e3, 100, initial_position1, velocity1, F1, F2, acc1);
@@ -110,6 +110,7 @@ for i = 1:T_num
     end % for j = 1:numOfPlatForm % 遍历平台
 end % for i = 1:T_num
 
+
 %% 对不同平台分别算
 % myfun =  @(FFre, t) f0 - f0 * (v * (x0 + v * t) / (1500 * sqrt((x0 + v * t)^2 + y0^2)));
 myfun = @(params, t) params(1) * (1 - params(2) * (params(3) + params(2) * t) ./ (1500 * sqrt((params(3) + params(2) * t).^2+params(4)^2)));
@@ -137,8 +138,8 @@ for i = 1:numOfPlatForm
     % 设置信赖域算法的迭代参数
     options.MaxIterations = 400;
     [xx{i}, resnorm, residual, exitflag, output] = lsqcurvefit(myfun, initialGuess, tt, FFre, lb, ub, options);
-    xx(i);
-%     disp(output);
+    xx(i)
+    disp(output)
 
     figure
     plot(FFre);
@@ -158,29 +159,14 @@ node = [0, 0; ...
 d = zeros(1, numOfPlatForm);
 vv = zeros(1, numOfPlatForm);
 ff = zeros(1, numOfPlatForm);
-for i = 1:numOfPlatForm
+for i = 1 : numOfPlatForm
     fd = cell2mat(xx(i));
     d(i) = fd(4);
     vv(i) = fd(2);
-    ff(i) = fd(1);
+    ff (i) = fd(1);
 end
 vv
 
 %% 开始计算目标运动参数
-A = [node(3, 1), -node(3, 2); ...
-    node(4, 1), -node(4, 2)];
-B = cell(numOfPlatForm, 1);
-X = cell(numOfPlatForm, 1);
-B{1} = [d(3) / d(1) - 1, d(4) / d(1) - 1]';
-B{2} = [-d(3) / d(1) - 1, d(4) / d(1) - 1]';
-B{3} = [d(3) / d(1) - 1, -d(4) / d(1) - 1]';
-B{4} = [-d(3) / d(1) - 1, -d(4) / d(1) - 1]';
-res = zeros(numOfPlatForm, 2); % k, b
-% 使用最小二乘法计算
-for i = 1:numOfPlatForm
-    X{i} = inv(A'*A) * A' * cell2mat(B(i));
-    res(i, 1) = X{i}(2) / X{i}(1); % k
-    res(i, 2) = 1 / X{i}(2); % b
-end
-
-% 计算误差最小的作为结果
+A = [node(3, 1) -node(3, 2);
+     node(4, 1) -node(4, 2)]
