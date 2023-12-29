@@ -220,7 +220,7 @@ end
 Tres3 = cell(numOfSource, 1);
 for k = 1:numOfSource
     Tres3{k} = nan(size(Elements{k}, 1), 2); % 时间*1的结果
-    % 这里从5开始
+    % 时间
     for i = 1:size(Elements{k}, 1)
         d = 1e3;
         oldTargetX = res3{k}(i, 1);
@@ -326,8 +326,7 @@ yy2 = pos_y2 + R2 * cos(angle2);
 res(1) = (xx1 + xx2) / 2;
 res(2) = (yy1 + yy2) / 2;
 end
-
-%% 在这个方程中加上抗异常参量
+%% 两两组合加LSM解算目标点
 function [EstX, EstY] = AOA2(Zt, node)
 len = size(node, 1);
 m = 0; % 记录解的个数
@@ -358,7 +357,6 @@ for i = 1:len
         loc(m, :) = [i, j]; % 记录目标位置与所利用的参量的对应关系
     end
 end
-
-
 end
+
 

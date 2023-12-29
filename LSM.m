@@ -9,8 +9,8 @@ A = [-tand(theta), ones(length(x1), 1)];
 B = y1 - x1 .* tand(theta);
 X = (A' * A) \ A' * B; % 目标位置X=[x;y]
 if isempty(X)
-    EstX = inf;
-    EstY = inf;
+    EstX = nan;
+    EstY = nan;
 else
     EstX = X(1);
     EstY = X(2);

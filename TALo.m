@@ -4,7 +4,7 @@
 % 作者: ZLM
 % 联系方式: Liminzhang7@outlook.com
 % 日期: 2023-12-26
-% 描述: TDOA/AOA定位方法的实现函数，参考公式 王静飞论文
+% 描述: 各种定位方法的集中调用，kmeans验证函数
 % 输入:
 % 输出:
 %**************************************************************************
@@ -19,10 +19,8 @@ tMatrix = cell(numOfSource, 1);
 aMatrix = cell(numOfSource, 1);
 res = cell(numOfSource, 1);
 for i = 1:numOfSource
-    % 现在这是一个目标
 
     %% 针对不同平台
-
     % 提取有用信息
     tMatrix{i} = zeros(T_num, numOfPlatForm);
     aMatrix{i} = zeros(T_num, numOfPlatForm);
@@ -38,30 +36,120 @@ for i = 1:numOfSource
         aMatrix{i}(:, j) = angInfo;
     end
 
-    %% 开始解算？
-
-    res{i} = TA(tMatrix{i}, aMatrix{i}, node);
+    %     %% 开始解算？
+    %     % TDOA/AOA
+    %     res{i} = myTA(tMatrix{i}, aMatrix{i}, node);
+    %
+    %     %% TDOA
+    %     res{i} = myTDOA(tMatrix{i}, aMatrix{i}, node);
+    %     %% AOA
 end
 
-figure('Units', 'centimeters','Position', [15 5 20 11.24/15*15]);
+
+% %% 画图
+% figure('Units', 'centimeters', 'Position', [15, 5, 20, 11.24 / 15 * 15]);
+% hold on
+% for i = 1:numOfSource
+%     plot(res{i}(:, 1), res{i}(:, 2), '.');
+% end
+% scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100);
+% hold off
+% legend('目标1', '目标2', 'Location', 'eastoutside')
+% title("kmeans&TDOA/AOA定位结果")
+% set(gca, 'Box', 'on')
+% disp("结束");
+
+%% 针对某点时刻进行解算
+i = 1;
+t = 200;
+% 使用 isnan 函数生成逻辑矩阵，其中非NaN元素为true，NaN元素为false
+nanLogicalMatrix = ~isnan(tMatrix{i});
+res = cell(3, 1);
+loc = cell(3, 1);
+% 使用 sum 函数按行求和，得到每行非NaN元素的数量
+nonNaNCountPerRow = sum(nanLogicalMatrix, 2);
+if nonNaNCountPerRow(t) >= 2
+    % 获取该行中非NaN元素的索引
+    nonNaNIndices = find(~isnan(tMatrix{i}(t, :)));
+    % 提取出对应的平台时延和角度
+    currentT = tMatrix{i}(t, nonNaNIndices);
+    currentA = aMatrix{i}(t, nonNaNIndices);
+    nodeT = node(nonNaNIndices, :);
+    nodeT = [nodeT, zeros(length(nonNaNIndices), 1)];
+
+    %% 计算TDOA/AOA
+    [res{1}, loc{1,:}] = TA(currentT, currentA, nodeT);
+    %% 计算TDOA
+    [res{2}, loc{2,:}] = TDOA(currentT, nodeT);
+    %% 计算AOA
+    [res{3}, loc{3,:}] = AOA(currentA, nodeT);
+end
+
+%% 如何将结果综合起来
+% 创建两个 cell 数组
+cellArray1 = {'p1', 'p2', 'theta3'};
+cellArray2 = {'p4', 'p5'};
+
+% 直接拼接
+concatenatedArray = [cellArray1, cellArray2];
+Res = res{1}; % 5
+Res = [Res;res{2}]; % 1
+Res = [Res;res{3}]; % 6
+% Res应该先去除掉无解的结果
+% 找到包含nan或inf的行号
+rowsToRemove = any(isnan(Res), 2) | any(isinf(Res), 2);
+% 去除包含nan或inf的行
+Res = Res(~rowsToRemove, :);
+Loc = loc{1}; % 5
+% xx = cellstr(loc{2});
+Loc = [Loc;{loc{2}}]; % 1
+Loc = [Loc;loc{3}]; % 6
+Loc = Loc(~rowsToRemove, :);
+%% 进行聚类分析
+rho = 1000;
+gamma = 0.005;
+[respie] = jujidu(Res, Loc, rho, gamma);
+
+% disp("Finish")
+
+
+%% 找到异常的参量
+indicesInRes = find(ismember(Res, respie)); % 使用 find 查找子集元素在父数组中的索引
+
+halfIndex = numel(indicesInRes) / 2;
+firstHalfIndices = indicesInRes(1:halfIndex); % 找到保留的行号
+locpie = Loc(firstHalfIndices, :);
+
+% 先将这些cell拼接
+LLoc = unique(horzcat(Loc{:}));
+llocpie = unique(horzcat(locpie{:}));
+
+% 使用 setdiff 找到在 Res 中但不在 respie 中的元素
+nonSubsetElementsInRes = setdiff(LLoc, llocpie);
+
+fprintf("异常参量是: %s\n" ,nonSubsetElementsInRes);
+%% 画出来筛选前后综合支持度的图
+zhichidu(Res, firstHalfIndices);
+
+%% 画图
+figure('Units', 'centimeters', 'Position', [15, 5, 20, 11.24 / 15 * 15]);
 hold on
-for i = 1:numOfSource
-    plot(res{i}(:, 1), res{i}(:, 2), '.');
-end
+plot(Res(:, 1), Res(:, 2), 'b*')
+plot(respie(:, 1), respie(:, 2), 'r*');
+plot(mean(respie(:, 1)), mean(respie(:, 2)), 'bp','MarkerFaceColor', 'b');
 scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100);
+legend("C2","C1","C1中心", "观测平台", 'Location', 'eastoutside');
 hold off
-legend('目标1', '目标2', 'Location', 'eastoutside')
-title("kmeans&TDOA/AOA定位结果")
-set(gca, 'Box', 'on')
-disp("结束");
+title("目标位置初测值（全局）")
+
+% figure('Units', 'centimeters', 'Position', [15, 5, 20, 11.24 / 15 * 15]);
 
 end
 
 %% 实现TDOA/AOA算法  参考公式 王静飞论文
 % 输入参数 1个目标的时延和方位矩阵
 % 输出参数 当前目标的时间定位结果
-function [Res] = TA(tMatrix, aMatrix, node)
-c = 1500;
+function [Res] = myTA(tMatrix, aMatrix, node)
 time = size(tMatrix, 1);
 % 使用 isnan 函数生成逻辑矩阵，其中非NaN元素为true，NaN元素为false
 nanLogicalMatrix = ~isnan(tMatrix);
@@ -78,72 +166,42 @@ for t = 1:time
         currentT = tMatrix(t, nonNaNIndices);
         currentA = aMatrix(t, nonNaNIndices);
         nodeT = node(nonNaNIndices, :);
-        % 两两组合 开始计算
-        m = 0;
-        for i = 1:size(currentA, 2)
-            for j = i + 1:size(currentA, 2)
-                % 在计算前加上一下判角条件
-                % 当前平台的位置
-                x1 = nodeT(i, 1);
-                y1 = nodeT(i, 2);
-                x2 = nodeT(j, 1);
-                y2 = nodeT(j, 2);
-                % 当前平台的时延
-                t1 = currentT(i);
-                t2 = currentT(j);
-                % 当前平台的角度
-                a1 = currentA(i);
-                a2 = currentA(j);
 
-                % 先随机开始计算
-                ts = t1 - ((x2 - x1)^2 + (y2 - y1)^2 - c^2 * (t2 - t1)^2) ...
-                    / (2 * c^2 * (t2 - t1) + 2 * c * cosd(a1) * sqrt((x2 - x1)^2+(y2 - y1)^2));
-                d = t1 - ts;
-                xs = x1 - c * d * ((y2 - y1) * sind(a1) - (x2 - x1) * cosd(a1)) ...
-                    / sqrt((x2 - x1)^2+(y2 - y1)^2);
-                ys = y1 - c * d * (-(y2 - y1) * cosd(a1) - (x2 - x1) * sind(a1)) ...
-                    / sqrt((x2 - x1)^2+(y2 - y1)^2);
+        [res, loc] = TA(currentT, currentA, nodeT);
+        [Res(t, 1), Res(t, 2)] = jujidu(res, loc, 100);
+    end
+end
+end
 
-                % 求目标到两平台的距离
-                targetPosition = [xs, ys]; % 目标位置坐标
-                platformPositions = [x1, y1; x2, y2]; % 平台位置坐标矩阵
+%% 实现TDOA算法
+function [Res] = myTDOA(tMatrix, aMatrix, node)
 
-                % 使用 pdist 计算目标到两个平台的距离
-                distances = pdist([targetPosition; platformPositions]);
+time = size(tMatrix, 1);
+% 使用 isnan 函数生成逻辑矩阵，其中非NaN元素为true，NaN元素为false
+nanLogicalMatrix = ~isnan(tMatrix);
 
-                % 然后判断这个解是否距离i平台更近
-                if distances(1) > distances(2)
-                    % 重新计算结果
-                    x1 = nodeT(j, 1);
-                    y1 = nodeT(j, 2);
-                    x2 = nodeT(i, 1);
-                    y2 = nodeT(i, 2);
-                    % 当前平台的时延
-                    t1 = currentT(j);
-                    t2 = currentT(i);
-                    % 当前平台的角度
-                    a1 = currentA(j);
-%                     a2 = currentA(j);
+% 使用 sum 函数按行求和，得到每行非NaN元素的数量
+nonNaNCountPerRow = sum(nanLogicalMatrix, 2);
+Res = nan(time, 2);
+res = zeros(1, 2);
+for t = 1:time
+    if nonNaNCountPerRow(t) >= 3
+        % 可以进行计算了，寻找对应平台的索引
+        % 获取该行中非NaN元素的索引
+        nonNaNIndices = find(~isnan(tMatrix(t, :)));
+        % 提取出对应的平台时延
+        currentT = tMatrix(t, nonNaNIndices);
 
-                    % 先随机开始计算
-                    ts = t1 - ((x2 - x1)^2 + (y2 - y1)^2 - c^2 * (t2 - t1)^2) ...
-                        / (2 * c^2 * (t2 - t1) + 2 * c * cosd(a1) * sqrt((x2 - x1)^2+(y2 - y1)^2));
-                    d = t1 - ts;
-                    xs = x1 - c * d * ((y2 - y1) * sind(a1) - (x2 - x1) * cosd(a1)) ...
-                        / sqrt((x2 - x1)^2+(y2 - y1)^2);
-                    ys = y1 - c * d * (-(y2 - y1) * cosd(a1) - (x2 - x1) * sind(a1)) ...
-                        / sqrt((x2 - x1)^2+(y2 - y1)^2);
-
-                end
-                m = m + 1;
-                res(m, :) = [xs, ys];
-                loc(m, :) = [i, j];
-            end
-        end
-        [Res(t, 1), Res(t, 2)] = jujidu(res, loc, 800);
+        nodeT = node(nonNaNIndices, :);
+        % 变成行向量
+        %         nodeT = nodeT(:)';
+        % 观测平台加深度列
+        nodeT = [nodeT, zeros(length(nonNaNIndices), 1)];
+        [res(1, 1), res(1, 2)] = TDOA(currentT, nodeT);
+        loc = nonNaNIndices;
+        [Res(t, 1), Res(t, 2)] = jujidu(res, loc, 100);
     end
 
 end
-
 
 end

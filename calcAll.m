@@ -166,6 +166,29 @@ for iii = 1:length(t_obs)
         end
     end
 end
+figure
+hold on
+axis([0, 10e3, 0, 10e3])
+title("分治贪心关联")
+for ii = 1:numOfSource
+    plot(outLoctionCAX(ii, :), outLoctionCAY(ii, :), '.')
+    % 刷新图形
+    drawnow;
+    % 添加延时，以调整动画速度
+    pause(0.5);
+
+end
+
+
+figure
+hold on
+for ii = 1:numOfSource
+    plot(outLoctionSPCX(ii, :), outLoctionSPCY(ii, :), '.')
+    axis([0, 10e3, 0, 10e3])
+    title("分治贪心关联+时空关联")
+end
+
+
 end
 
 %% ==========================子函数===============================
