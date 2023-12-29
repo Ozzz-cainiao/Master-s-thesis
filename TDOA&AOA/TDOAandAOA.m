@@ -50,7 +50,8 @@ y = (0:2:2000)';
 [lenx, leny] = deal(length(x), length(y));
 % errornor = [2^2, 2^2, 0.002^2, 1.5^2, 1^2]; % dx^2 dy^2 t^2 c^2 theta误差
 % errornor = [2^2, 2^2, 0.001^2, 1.5^2, (0.1 / 180 * pi)^2, (0.1 / 180 * pi)^2]; % dx^2 dy^2 t^2 c^2 theta误差
-errornor = [2^2, 2^2, 0.001^2, 3^2, (0.1 / 180 * pi)^2, (0.1 / 180 * pi)^2]; % dx^2 dy^2 t^2 c^2 theta误差
+% errornor = [2^2, 2^2, 0.001^2, 3^2, (0.1 / 180 * pi)^2, (0.1 / 180 * pi)^2]; % dx^2 dy^2 t^2 c^2 theta误差
+errornor = [2^2, 2^2, 0.001^2, 3^2, (1 / 180 * pi)^2, (1 / 180 * pi)^2]; % dx^2 dy^2 t^2 c^2 theta误差
 
 % errornor = [2^2, 2^2, 0.001^2, 1.5^2, (0.5 / 180 * pi)^2, (0.5 / 180 * pi)^2]; % dx^2 dy^2 t^2 c^2 theta误差
 
@@ -97,7 +98,7 @@ title('TOA-AOA平面角解算误差');
 clim([0, 10]); colormap jet
 shading interp;view(0,90)
 average_value = nanmean(errorsum(:));
-fprintf('%.2f\n', averageValue); % 显示2位小数
+fprintf('%.2f\n', average_value); % 显示2位小数
 
 %% 两个平台一个角参与解算
 clc
@@ -134,7 +135,7 @@ y = (0:5:2000)';
 
 [lenx, leny] = deal(length(x), length(y));
 % errornor = [2^2, 2^2, 0.002^2, 1.5^2, 1^2]; % dx^2 dy^2 t^2 c^2 theta误差
-errornor = [0^2, 0^2, 0.001^2, 1.5^2, (0.1 / 180 * pi)^2]; % dx^2 dy^2 t^2 c^2 theta误差
+errornor = [0^2, 0^2, 0.001^2, 1.5^2, (1 / 180 * pi)^2]; % dx^2 dy^2 t^2 c^2 theta误差
 
 errorsum = zeros(lenx, leny);
 c = 1500;
@@ -182,10 +183,10 @@ colorbar;
 xlabel('x/m');
 ylabel('y/m');
 title('TOA-AOA平面角解算误差');
-clim([0, 10]); colormap jet
+clim([0, 15]); colormap jet
 shading interp;view(0,90)
 average_value = nanmean(errorsum(:));
-fprintf('%.2f\n', averageValue); % 显示2位小数
+fprintf('%.2f\n', average_value); % 显示2位小数
 
 
 % %% 两个平台，1个角参与解算 只用theta1

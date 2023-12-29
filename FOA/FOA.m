@@ -15,7 +15,11 @@
 clc
 clear
 close all
-
+%% 重复次数
+count = 30;
+res = zeros(count, 4);
+% sumOfFre = zeros(1, length(t));
+for num = 1 : count
 %% 观测数据
 T = 0.5; % 观测周期
 dt = T;
@@ -24,6 +28,7 @@ T_num = T_all / T;
 t = 0:T:T_num * T;
 var2d = 1.5^2; % 角度制  角度误差
 var2f = 0.2; % 观测的频率误差
+
 
 %% 运动模型
 % 这是什么模型？
@@ -40,11 +45,11 @@ F2 = [0.5 * T^2, 0; ...
     0, T];
 
 %% 创建运动的声源对象
-initial_position1 = [-800, 100]; % 初始位置目标1
+initial_position1 = [-800, 200]; % 初始位置目标1
 velocity1 = [8, 0]; % 运动速度（假设在 x 轴上匀速运动）
 acc1 = 0; % 加速度
 % source1 = SoundSource('CW', [2e3], [100], initial_position1, velocity1, acc1);
-source1 = SoundSource('CW', 1e3, 100, initial_position1, velocity1, F1, F2, acc1);
+source1 = SoundSource('CW', 1200, 100, initial_position1, velocity1, F1, F2, acc1);
 
 %% 创建平台
 platform1 = Platform([0, 0]);
@@ -74,8 +79,6 @@ for i = 1:T_num
                 angR{j}(t_Num, k) = angle + sqrt(var2d) * randn;
                 % 观测目标是频率
                 Fre{j}(t_Num, k) = fre + sqrt(var2f) * randn; % 加时延
-                %                 Fre{j}(i, k) = fre + sqrt(var2f) * randn; % 不加时延
-
             else
                 sourceAll(k) = sourceAll(k).updatePosition();
                 [angle, ~, t_delay, type, fre, platFormAll(j)] = platFormAll(j).getTargetInfo(sourceAll(k), dt);
@@ -85,57 +88,51 @@ for i = 1:T_num
                 angR{j}(t_Num, k) = angle + sqrt(var2d) * randn; % 这个结果是度
                 % 观测目标是频率
                 Fre{j}(t_Num, k) = fre + sqrt(var2f) * randn; % 加时延
-                % Fre{j}(i, k) = fre; % 不加时延
-                %                 Fre{j}(i, k) = fre + sqrt(var2f) * randn; % 不加时延
             end
         end % for k = 1:numOfSource % 遍历声源
     end % for j = 1:numOfPlatForm % 遍历平台
 end % for i = 1:T_num
 
-%% 将Fre提取出来
+%% 计算
 FFre = cell2mat(Fre)';
-% 需要把非0值提取出来
-
+% sumOfFre = sumOfFre + FFre;
 % 找到非零值对应的索引
-nonZeroIndices = find(FFre ~= 0);
+nonZeroIndices = find(FFre(1:length(t)) ~= 0);
 
 % 根据索引从数组 B 中提取相应的值
 t = t(nonZeroIndices);
 FFre = FFre(nonZeroIndices);
-% % 显示结果
-% disp('非零值对应的索引：');
-% disp(nonZeroIndices);
-% 
-% disp('根据索引从数组 B 中提取的值：');
-% disp(valuesFromB);
-
-% FFre = FFre(2:end);
-% t = t(2:end);
 
 % 匀速运动公式
 % myfun =  @(FFre, t) f0 - f0 * (v * (x0 + v * t) / (1500 * sqrt((x0 + v * t)^2 + y0^2)));
 myfun = @(params, t) params(1) * (1 - params(2) * (params(3) + params(2) * t) ./ (1500 * sqrt((params(3) + params(2) * t).^2+params(4)^2)));
 fun = @(x, xdata)x(1) - x(1) * x(2) * (x(3) + x(2) * xdata) ./ sqrt((x(3) + x(2) * xdata).^2+x(4)^2) / 1500;
-% Define initial guess for parameters 搜索初始值
+
 % initialGuess = [f0_guess, v_guess, x0_guess, y0_guess];  % Replace these with your initial guesses
 initialGuess = [FFre(end, 1), 10, -500, 200]; % Replace these with your initial guesses
 lb = [FFre(end, 1) - 10, 0, -4000, 1]; % 下界
 ub = [FFre(end, 1) + 10, 50, -10, 10000]; % 上界
-% options = optimset('MaxFunEvals', 800, 'MaxIter', 500);
 
 % 创建一个optimoptions对象
 options = optimoptions('lsqcurvefit');
 
 % 设置信赖域算法的迭代参数
 options.MaxIterations = 400;
-
 [xx, resnorm, residual, exitflag, output] = lsqcurvefit(myfun, initialGuess, t, FFre, lb, ub, options);
-xx
-disp(output)
+% disp(xx)
+res(num,:)= xx;
+end
 
+%% 计算所有估计次数的平均值
+averageValue = mean(res);
+fprintf('估计结果 %.2f\n', averageValue); % 显示2位小数
+
+%% 画图
 times = linspace(t(1), t(end));
 figure
-plot(t, FFre, 'ko', times, myfun(xx, times), 'b-')
-legend('Data', 'Fitted exponential')
-title('Data and Fitted Curve')
+% plot(t, FFre, 'ko', times, myfun(xx, times), 'b-')
+% plot(t, sumOfFre./count, 'r-', times, myfun(averageValue, times), 'b-')
 
+plot(t, FFre, 'r-', times, myfun(averageValue, times), 'b-')
+legend('观测频率', '估计频率')
+title('观测频率与估计频曲线')

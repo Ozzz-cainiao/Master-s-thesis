@@ -62,7 +62,7 @@ initial_position3 = [5e3, 5e3]; % 初始位置目标2
 velocity3 = [10, 0]; % 运动速度
 acc3 = 0; % 加速度
 % source3 = SoundSource('CW', [1e3, 2e3], [100, 50], initial_position3, velocity3, acc3);
-source3 = SoundSource('CW', [1e3, 2e3], [100, 50], initial_position3, velocity3, F1, F2, acc3);
+source3 = SoundSource('CW', [2e3], [100], initial_position3, velocity3, F1, F2, acc3);
 
 initial_position4 = [2e3, 7e3]; % 初始位置目标2
 velocity4 = [0, 10]; % 运动速度
@@ -70,7 +70,12 @@ acc4 = 0; % 加速度
 % source4 = SoundSource('CW', [1e3, 2e3], [100, 500], initial_position4, velocity4, acc4);
 source4 = SoundSource('CW', [1e3, 2e3], [100, 500], initial_position4, velocity4, F1, F2, acc4);
 
-sourceAll = [source1, source2, source3, source4];
+initial_position5 = [3e3, 5e3]; % 初始位置目标2
+velocity5 = [-10, 10]; % 运动速度
+acc5 = 0; % 加速度
+source5 = SoundSource('LFM', [1e2, 2e2], [100, 50], initial_position2, velocity2, F1, F2, acc2);
+
+sourceAll = [source1, source2, source3, source4, source5];
 
 %% 创建一个多维矩阵来存储目标信息
 % 维度1：平台，维度2：时刻，维度3：目标
@@ -125,7 +130,9 @@ DeTh = 10; % 迭代次数阈值
 newcell = cell(1, numOfPlatForm);
 
 for i = 1:length(angR)
-    newcell{i} = angR{i}(1, :); % 提取出来自一个目标的
+    % 这里有问题
+    newcell{i,1} = angR{i}(1, :); % 提取出来自一个目标的
+    newcell{i,2} = angR{i}(5, :); % 提取出来自一个目标的
 end
 for iii = 1:length(t_obs)
     d = inf;
@@ -385,3 +392,5 @@ else
     locs = nan(size(Zt'));
 end
 end
+
+%% TDOA/AOA

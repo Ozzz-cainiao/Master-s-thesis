@@ -39,12 +39,12 @@ F2 = [0.5 * T^2, 0; ...
 
 %% 创建观测平台对象
 platform1 = Platform([0, 0]);
-platform2 = Platform([1200, 0]);
-platform3 = Platform([1200, 1e3]);
-platform4 = Platform([0, 1e3]);
+platform2 = Platform([1.2e3, 0]);
+platform3 = Platform([1.2e3, 1.2e3]);
+platform4 = Platform([0, 1.2e3]);
 
 %% 创建运动的声源对象
-initial_position1 = [-500, 1000]; % 初始位置目标1
+initial_position1 = [-400, 800]; % 初始位置目标1
 v = 8;
 slope = -0.5;
 % slope = 0;
@@ -64,10 +64,10 @@ B = 1;
 C = slope * x0 - y0;
 
 % 从一般方程中获取y轴上的截距
-b = -C / B;
+realb = -C / B;
 
 % 显示结果
-disp(['直线在y轴上的截距为: ', num2str(b)]);
+disp(['直线在y轴上的截距为: ', num2str(realb)]);
 
 %% 创建一个多维矩阵来存储目标信息
 % 维度1：平台，维度2：时刻，维度3：目标
@@ -89,7 +89,7 @@ for i = 1:T_num
                 angR{j} = nan(T_all, numOfSource); % 现在只用来存放方位信息
                 %                 [angle, ~, t_delay, type, fre, platFormAll(j)] = platFormAll(j).getTargetInfo(sourceAll(k), 0);
 
-                [angle, ~, t_delay, type, fre, platFormAll(j)] = platFormAll(j).getTargetInfoFre(sourceAll(k), 0, slope, b);
+                [angle, ~, t_delay, type, fre, platFormAll(j)] = platFormAll(j).getTargetInfoFre(sourceAll(k), 0, slope, realb);
                 t_Num = round(t_delay/dt) + i; % 放到此时刻传播时延之前的时刻
                 target_info_matrix{j, t_Num, k} = struct('angle', angle, 'type', type, 'fre', fre); %
                 %                 angR{j}(t_Num, k) = struct('angle', angle, 'type', type, 'fre', fre);
@@ -100,7 +100,7 @@ for i = 1:T_num
             else
                 sourceAll(k) = sourceAll(k).updatePosition();
                 %                 [angle, ~, t_delay, type, fre, platFormAll(j)] = platFormAll(j).getTargetInfo(sourceAll(k), dt);
-                [angle, ~, t_delay, type, fre, platFormAll(j)] = platFormAll(j).getTargetInfoFre(sourceAll(k), dt, slope, b);
+                [angle, ~, t_delay, type, fre, platFormAll(j)] = platFormAll(j).getTargetInfoFre(sourceAll(k), dt, slope, realb);
                 t_Num = round(t_delay/dt) + i; % 放到此时刻传播时延之前的时刻
                 target_info_matrix{j, t_Num, k} = struct('angle', angle, 'type', type, 'fre', fre); %
                 %                 angR{j}(t_Num, k) = struct('angle', angle, 'type', type, 'fre', fre);
@@ -139,16 +139,21 @@ for i = 1:numOfPlatForm
     % 设置信赖域算法的迭代参数
     options.MaxIterations = 400;
     [xx{i}, resnorm, residual, exitflag, output] = lsqcurvefit(myfun, initialGuess, tt, FFre, lb, ub, options);
-    
+
     %     disp(output);
 
-%     figure
-%     plot(FFre);
+    %     figure
+    %     plot(FFre);
     times = linspace(tt(1), tt(end));
     figure
-    plot(tt, FFre, 'ko', times, myfun(cell2mat(xx(i)), times), 'b-')
-    legend('Data', 'Fitted exponential')
-    title('Data and Fitted Curve')
+    %     plot(tt, FFre, 'ko', times, myfun(cell2mat(xx(i)), times), 'b-')
+    %     legend('Data', 'Fitted exponential')
+    %     title('Data and Fitted Curve')
+    %     plot(t, FFre, 'r-', times, myfun(averageValue, times), 'b-')
+    plot(tt, FFre, 'r-', times, myfun(cell2mat(xx(i)), times), 'b-')
+
+    legend('观测频率', '估计频率')
+    title(['观测平台', num2str(i), '观测频率与估计频曲线'])
 end
 
 %% 开始获取运动参数
@@ -190,14 +195,15 @@ for i = 1:numOfPlatForm
     dis = zeros(numOfPlatForm, 1);
 
     % 求1，3，4点到直线的距离
-    for j = 1 : numOfPlatForm
+    for j = 1:numOfPlatForm
         dis(j) = pointToLineDistance(k, b, node(j, 1), node(j, 2));
+        realDis(j) = pointToLineDistance(slope, realb, node(j, 1), node(j, 2));
     end
 
     % 解算点与距离之差的和
-    for j = 1 : length(selectIndex)
-        Epsilon(i) = abs(dis(selectIndex(j)) - d(selectIndex(j))) ;
-    end    
+    for j = 1:length(selectIndex)
+        Epsilon(i) = abs(dis(selectIndex(j))-d(selectIndex(j)));
+    end
 end
 
 % 找到Epsilon最小的索引，这一对k,b作为解算结果
@@ -209,13 +215,17 @@ minIndex = find(Epsilon == minValue);
 fprintf('估计频率为 %.2f，%.2f，%.2f，%.2f\n', ff(1), ff(2), ff(3), ff(4));
 fprintf('估计速度为 %.2f，%.2f，%.2f，%.2f\n', vv(1), vv(2), vv(3), vv(4));
 fprintf('估计距离为 %.2f，%.2f，%.2f，%.2f\n', d(1), d(2), d(3), d(4));
-fprintf('估计的k的值是 %.2f，b 的值是 %.2f\n', res(minIndex,1), res(minIndex,2));
-
+fprintf('估计的k的值是 %.2f，b 的值是 %.2f\n', res(minIndex, 1), res(minIndex, 2));
+realDis = zeros(numOfPlatForm, 1);
+% 求1，3，4点到直线的距离
+for j = 1:numOfPlatForm
+    realDis(j) = pointToLineDistance(slope, realb, node(j, 1), node(j, 2));
+end
+fprintf('真实距离为 %.2f，%.2f，%.2f，%.2f\n', realDis(1), realDis(2), realDis(3), realDis(4));
 
 % 计算点到直线的距离
 function distance = pointToLineDistance(k, b, x0, y0)
-    numerator = abs(k*x0 - y0 + b);
-    denominator = sqrt(k^2 + 1);
-    distance = numerator / denominator;
+numerator = abs(k*x0-y0+b);
+denominator = sqrt(k^2+1);
+distance = numerator / denominator;
 end
-

@@ -15,15 +15,15 @@ close all
 % function []=AccuracyAnalysis(xy,Xmin,Xmax,Ymin,Ymax,Step)
 % function [] = Analysis2(arrx, arry, Xmin, Xmax, Ymin, Ymax, Step, errornor)
 
-% arrx=[500,1500];
-% arry=[1000,1000];
+arrx=[500,1500];
+arry=[1000,1000];
 % arrx=[300,1000,1700];
 % arry=[300,1700,300];
 % arrx=[0,2000,2000,0];
 % arry=[0,0,2000,2000];
-arrx=[300,1700,1700,300];
-arry=[300,300,1700,1700];
-errornor = [0, 0, (1 / 180 * pi)^2]; %
+% arrx=[300,1700,1700,300];
+% arry=[300,300,1700,1700];
+errornor = [0, 0, (0.1 / 180 * pi)^2]; %
 
 % errornor = [0, 0, (2 / 180 * pi)^2]; %
 

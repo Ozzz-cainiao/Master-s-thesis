@@ -80,7 +80,7 @@ colorbar;
 xlabel('x/m');
 ylabel('y/m');
 title('平面角解算误差');
-clim([0, 50]);
+clim([0, 10]);
 colormap jet;
 shading interp;
 hold on;
