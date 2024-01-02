@@ -19,7 +19,8 @@ T = 0.1; %观测周期
 T_all = 50; %观测时间
 T_num = T_all / T; %观测次数
 dt = T; % 观测周期
-var2d = 1.5^2; % 角度制  角度误差
+% var2d = 1.5^2; % 角度制  角度误差
+var2d = 0^2; % 角度制  角度误差
 
 %% 创建平台
 platform1 = Platform([0, 0]);
@@ -27,23 +28,11 @@ platform2 = Platform([1e4, 0]);
 platform3 = Platform([1e4, 1e4]);
 platform4 = Platform([0, 1e4]);
 
-platFormAll = [platform1, platform2, platform3];
-% node = [0, 0; 1e4, 0; 1e4, 1e4; 0, 1e4];
-node = [0, 0; 1e4, 0; 1e4, 1e4;];
+platFormAll = [platform1, platform2, platform3, platform4];
+node = [0, 0; 1e4, 0; 1e4, 1e4; 0, 1e4];
+% node = [0, 0; 1e4, 0; 1e4, 1e4;];
 
-%% 运动模型
-% 这是什么模型？
-% 运动方程 x = x_last + v * t + 0.5 * a * t^2;
-%匀速运动矩阵
-F1 = [1, 0, T, 0; ...
-    0, 1, 0, T; ...
-    0, 0, 1, 0; ...
-    0, 0, 0, 1];
-%加速度矩阵
-F2 = [0.5 * T^2, 0; ...
-    0, 0.5 * T^2; ...
-    T, 0; ...
-    0, T];
+
 
 %% 创建运动的声源对象
 initial_position1 = [3e3, 3e3]; % 初始位置目标1
@@ -181,11 +170,11 @@ end
 %% 加误差的结果
 % out = AOATime(angM, node, 2, t_obs, T);
 %% 使用TDOA和TDOA/AOA定位
-TALo(twotarget_info_matrix, node);
+% TALo(twotarget_info_matrix, node);
 %% 分治贪心关联
 % 调用709函数 传入参数 角度 平台数 平台位置 目标数量
 % 传出 2*5000
-% [outLoctionCAX, outLoctionCAY, outLoctionSPCX, outLoctionSPCY] = calcAll(angM, numOfPlatForm, node, numOfSource, t_obs, T);
+[outLoctionCAX, outLoctionCAY, outLoctionSPCX, outLoctionSPCY] = calcAll(angM, numOfPlatForm, node, numOfSource, t_obs, T);
 
 %% ==========================绘图区===============================
 

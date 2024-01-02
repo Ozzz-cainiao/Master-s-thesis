@@ -5,7 +5,6 @@
 function [outLoctionCAX, outLoctionCAY, outLoctionSPCX, outLoctionSPCY] = calcAll(arrR, pNum, node, num, t_obs, T)
 
 
-
 var2d = 1.5^2;
 var2 = var2d * (pi / 180)^2;
 c = 1500;
@@ -23,6 +22,7 @@ outAngM = cell(num, length(t_obs));
 for iii = 1:length(t_obs)
     disp(['正在处理', num2str(iii)])
     angM1 = arrR(iii, :);
+    % 这里angM1可能有nan值
     ns = cellfun(@(x)size(x, 1), angM1); % 每个平台的测向线个数
     if num == 2 && pNum == 2
         if all(ns ~= 1) % 无解只剩下两个平台有测量，不能进行关联，只能对一个目标进行处理
@@ -166,28 +166,37 @@ for iii = 1:length(t_obs)
         end
     end
 end
-figure
+fig1 = figure('Units', 'centimeters', 'Position', [10, 10, 20, 11.24 / 15 * 15]);
+figure(fig1)
 hold on
+
 axis([0, 10e3, 0, 10e3])
 title("分治贪心关联")
-for ii = 1:numOfSource
-    plot(outLoctionCAX(ii, :), outLoctionCAY(ii, :), '.')
-    % 刷新图形
-    drawnow;
-    % 添加延时，以调整动画速度
-    pause(0.5);
-
+for ii = 1:2
+    plot(outLoctionCAX(ii, :), outLoctionCAY(ii, :), '.');
 end
+scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100);
+legend( '目标1', '目标2','观测站','Location', 'eastoutside', 'FontSize', 12)
+hold off
+set(gca, 'Box', 'on')
+xlabel('东向坐标/m', 'FontSize', 12)
+ylabel('北向坐标/m', 'FontSize', 12)
 
 
-figure
+fig2 = figure('Units', 'centimeters', 'Position', [10, 10, 20, 11.24 / 15 * 15]);
+figure(fig2)
 hold on
-for ii = 1:numOfSource
-    plot(outLoctionSPCX(ii, :), outLoctionSPCY(ii, :), '.')
-    axis([0, 10e3, 0, 10e3])
-    title("分治贪心关联+时空关联")
+for ii = 1:2
+    plot(outLoctionSPCX(ii, :), outLoctionSPCY(ii, :), '.') 
 end
-
+axis([0, 10e3, 0, 10e3])
+title("分治贪心关联+时空关联")
+scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100);
+legend('目标1', '目标2','观测站', 'Location', 'eastoutside', 'FontSize', 12)
+hold off
+set(gca, 'Box', 'on')
+xlabel('东向坐标/m', 'FontSize', 12)
+ylabel('北向坐标/m', 'FontSize', 12)
 
 end
 
@@ -208,6 +217,9 @@ function varargout = dcgt(varargin)
 
 warning('off')
 Z = varargin{1};
+% % 去除空的内部 cell
+% x = cellfun(@(x) ~isempty(x), Z);
+% Z = Z(~cellfun('isempty', x));
 node = varargin{2};
 var2 = varargin{3}(1); % 角度测量方差单位rad
 PD = varargin{3}(2); % 检测概率
@@ -217,17 +229,20 @@ Q = varargin{4}(2); % 列表最大长度
 I = varargin{4}(3); % 并行次优条数
 pNum = size(node, 1); % 节点数
 angM = arrayfun(@(x)cat(2, cell2mat(x{1, 1}(:, 1))), Z, 'un', 0); % 角度特征元胞组
+
 %%% ==========================基于分治思想的最优交点集合选取===============================
 %%% Step1：生成交点
-nl = cellfun(@length, angM(:)); % 各个平台测量数量
+% angM(:)：将矩阵angM展开成一个列向量，其中每个元素是原矩阵中的一个cell
+% cellfun(@length, ...)：cellfun函数用于对cell数组的每个元素应用指定的函数。
+nl = cellfun(@length, angM(:)); % 各个平台测量数量 2 2 0
 % 计算非零行的个数
 nonZeroRowCount = nnz(nl ~= 0);
-disp(['非零行的个数为：', num2str(nonZeroRowCount)]);  
+disp(['非零行的个数为：', num2str(nonZeroRowCount)]);
 if nonZeroRowCount < 2
-    varargout{1} = [nan(1,pNum), nan, nan];
-  return;
+    varargout{1} = [nan(1, pNum), nan, nan];
+    return;
 end
-subs = arrayfun(@(x)0:x, nl, 'un', 0); % 生成序号
+subs = arrayfun(@(x)0:x, nl, 'un', 0); % 生成序号 从0开始是为了漏检的显示
 iter = cell(pNum, 1);
 [iter{end:-1:1}] = ndgrid(subs{end:-1:1}); % 生成网格
 temp = cellfun(@(x)x(:), iter, 'un', 0); % 中间变量
@@ -255,7 +270,7 @@ W = {};
 for k = 1:size(iter1, 1)
     locs21 = find(cell2mat(iter1(k, :))); % 所选平台序号
     locsM = iter1{k, locs21}; % 所选测量序号
-    Num22 = find(cell2mat(iter22(:, locs21)) == iter1{k, locs21}); % 在iter22筛选出来的序号
+    Num22 = find(cell2mat(iter22(:, locs21)) == iter1{k, locs21}); % 在iter22筛选出来的序号，选取的测向线
     point = iter22(Num22, :); % 筛选出来的测量序号+位置
     kk = 1;
     kknum = 1;
@@ -283,13 +298,13 @@ end
 
 Num3 = size(W, 1);
 if Num3 == 0
-    varargout{1} = [nan(1,pNum), nan, nan];
-  return;
+    varargout{1} = [nan(1, pNum), nan, nan];
+    return;
 end
 Lamdad = cell(Num3, 2);
 for k = 1:Num3
     locs31 = iter22(cell2mat(W(k, 1:2)), :); % locs31所选测量序号，和交点位置
-    [locs32, locs33] = find(cell2mat(locs31(:, 1:pNum))); % locs32行序数-》无意义 locs33列序数-》所选平台
+    [locs32, locs33] = find(cell2mat(locs31(:, 1:pNum))); % locs32行序数->无意义 locs33列序数->所选平台
     if length(unique(locs33)) < 3
         locs35 = arrayfun(@(x, y) locs31(x, y), locs32, locs33); % locs35测量序数，与locs33配合读取测量
         theta = cellfun(@(x, y) angM{x}(y), num2cell(locs33), locs35, 'un', 0);
@@ -326,8 +341,14 @@ for k = 1:Num3
         Lamdad{k, 2} = sum(c); % 似然
     end
 end
-%%% ==========================基于贪心思想的量测集合合并===============================
+
+%% ==========================基于贪心思想的量测集合合并===============================
+% 下面这一句 Lamdad_W可能为空，因为Lamdad可能都是nan值
 Lamdad_W = Lamdad(~isnan(cell2mat(Lamdad(:, 2))), :); % 排除一个组合有多个同平台测量
+if isempty(Lamdad_W)
+    varargout{1} = [nan(1, pNum), nan, nan];
+    return;
+end
 Num4 = size(Lamdad_W, 1);
 %%% 对获得组合按平台-测量序数分
 Set = cell(1, pNum);
@@ -348,7 +369,7 @@ while s <= pNum
     R = zeros(NumZ, Numz);
     for ii = 1:NumZ
         for jj = 1:Numz
-            Mea = cat(1, Z{ii}, z{jj});
+            Mea = cat(1, Z{ii}, z{jj}); % 在下方拼接
             locs51 = arrayfun(@(x) find(Mea(:, 1) == x), 1:pNum, 'un', 0); % 平台1：S对应再矩阵的序号
             locs52 = cellfun(@length, locs51); % 有多余1个测量的序号
             Mea2 = cellfun(@(x) Mea(x, :), locs51(locs52 > 1), 'un', 0); % 有多余1个测量的Mea
