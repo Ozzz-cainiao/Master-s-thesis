@@ -10,7 +10,6 @@ var2 = var2d * (pi / 180)^2;
 c = 1500;
 
 %% ==========================分治贪心关联===============================
-Dth = 500;
 dPonit = 10;
 PD = 0.99; %0.9        	% 检测概率2~3个目标时是0.99，4~5个目标时是0.9
 Fai = 2 * pi;
@@ -41,7 +40,7 @@ for iii = 1:length(t_obs)
             % Zt是1*numOfPlatform的cell数组，每个cell中是它的测向线
             Z = arrayfun(@(x) {angM1{x}(~isnan(angM1{x}))}, 1:pNum, 'un', 0);
             outDCGT = dcgt(Z, node, [var2, PD, Fai], [M, Q, I]);
-            outLocs = outDCGT(:, 1:length(Z));
+            outLocs = outDCGT(:, 1:length(Z)); % 输出的线序号结果
             outLocX = outDCGT(:, length(Z)+1);
             outLocY = outDCGT(:, length(Z)+2);
         end
@@ -115,7 +114,7 @@ for iii = 1:length(t_obs)
     disp(['正在处理', num2str(iii)])
     % 进行时空关联
     for i = 1:num
-        if isnan(outLoctionCAX(i))
+        if isnan(outLoctionCAX(i, iii))
             outLoctionSPCX(i, iii) = outLoctionCAX(i, iii);
             outLoctionSPCY(i, iii) = outLoctionCAY(i, iii);
         else
@@ -129,8 +128,11 @@ for iii = 1:length(t_obs)
                 y_e = midOldCAY - node(:, 2); % 估计位置与观测站纵轴距离
                 r_e = sqrt(x_e.^2+y_e.^2); % 估计位置与观测站之间的距离
                 t_e = r_e / c;
+                % 当前位置，针对的方位数据是在几个帧后获得的
                 t_ed = round(t_e-t_e(1), 1); % 时延差
-                loc_ed = round(t_ed/T) + iii; % 位置
+                loc_ed = round(t_ed/T) + iii; % 位置 这是绝对的帧号，不是相对的 
+
+                % 只找到时延差向后的
                 if all(loc_ed > 0 & loc_ed < length(t_obs)) % 时空关联能够进行
                     angM2 = zeros(1, pNum);
                     for s = 1:pNum
@@ -138,7 +140,7 @@ for iii = 1:length(t_obs)
                             ij = 1;
                             while ij < 10
                                 if (loc_ed(s) + ij < size(outAngM, i)) && ~isempty(outAngM{i, loc_ed(s)+ij})
-                                    angM2(s) = outAngM{i, loc_ed(s)+ij}(s);
+                                    angM2(s) = outAngM{i, loc_ed(s)+ij}(s); % 取到新的时延的角度值
                                     break
                                 else
                                     ij = ij + 1;
