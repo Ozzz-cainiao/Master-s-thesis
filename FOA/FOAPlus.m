@@ -17,7 +17,7 @@ close all
 %% 观测数据
 T = 0.2; % 观测周期
 dt = T;
-T_all = 300; % 观测总时间
+T_all = 600; % 观测总时间
 T_num = T_all / T;
 t = 0:T:T_num * T;
 var2d = 1.5^2; % 角度制  角度误差
@@ -39,14 +39,15 @@ F2 = [0.5 * T^2, 0; ...
 
 %% 创建观测平台对象
 platform1 = Platform([0, 0]);
-platform2 = Platform([1.2e3, 0]);
-platform3 = Platform([1.2e3, 1.2e3]);
-platform4 = Platform([0, 1.2e3]);
+platform2 = Platform([2e3, 0]);
+platform3 = Platform([2e3, 2e3]);
+platform4 = Platform([0, 2e3]);
+node = [0, 0; 2e3, 0; 2e3, 2e3; 0, 2e3];
 
 %% 创建运动的声源对象
-initial_position1 = [-400, 800]; % 初始位置目标1
+initial_position1 = [-1000, 1700]; % 初始位置目标1
 v = 8;
-slope = -0.5;
+slope = -0.4;
 % slope = 0;
 velocity1 = [v * cos(atan(slope)), v * sin(atan(slope))]; % 运动速度（假设在 x 轴上匀速运动）
 acc1 = 0; % 加速度
@@ -80,10 +81,12 @@ angR = cell(numOfPlatForm, 1);
 Fre = cell(numOfPlatForm, 1);
 
 %% 观测
-for i = 1:T_num
-    % 获取每个平台的每个目标信息
-    for j = 1:numOfPlatForm % 遍历平台
-        for k = 1:numOfSource % 遍历声源
+
+% 获取每个平台的每个目标信息
+for j = 1:numOfPlatForm % 遍历平台
+    for k = 1:numOfSource % 遍历声源
+        sourceAll = source1;
+        for i = 1:T_num
             if i == 1
                 %                 angR{j} = repmat(struct('angle', [], 'type', [], 'fre', []), T_all, numOfSource);
                 angR{j} = nan(T_all, numOfSource); % 现在只用来存放方位信息
@@ -111,6 +114,21 @@ for i = 1:T_num
         end % for k = 1:numOfSource % 遍历声源
     end % for j = 1:numOfPlatForm % 遍历平台
 end % for i = 1:T_num
+
+%% 画出目标的运动态势
+figure
+% fig1 = figure('Units', 'centimeters', 'Position', [10, 5, 20, 11.24 / 15 * 15]);
+% figure(fig1)
+hold on
+for i = 1:numOfSource
+    plot(sourceAll(i).Position(:, 1), sourceAll(i).Position(:, 2), '.');
+end
+scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100);
+legend('目标', '观测站', 'FontSize', 12)
+title('目标实际运动轨迹');
+set(gca, 'Box', 'on')
+xlabel('东向坐标/m', 'FontSize', 12)
+ylabel('北向坐标/m', 'FontSize', 12)
 
 %% 对不同平台分别算
 % myfun =  @(FFre, t) f0 - f0 * (v * (x0 + v * t) / (1500 * sqrt((x0 + v * t)^2 + y0^2)));
@@ -157,10 +175,6 @@ for i = 1:numOfPlatForm
 end
 
 %% 开始获取运动参数
-node = [0, 0; ...
-    1200, 0; ...
-    1200, 1e3; ...
-    0, 1e3];
 % 为什么V不对
 d = zeros(1, numOfPlatForm);
 vv = zeros(1, numOfPlatForm);
@@ -197,12 +211,12 @@ for i = 1:numOfPlatForm
     % 求1，3，4点到直线的距离
     for j = 1:numOfPlatForm
         dis(j) = pointToLineDistance(k, b, node(j, 1), node(j, 2));
-        realDis(j) = pointToLineDistance(slope, realb, node(j, 1), node(j, 2));
+%         realDis(j) = pointToLineDistance(slope, realb, node(j, 1), node(j, 2));
     end
 
     % 解算点与距离之差的和
     for j = 1:length(selectIndex)
-        Epsilon(i) = abs(dis(selectIndex(j))-d(selectIndex(j)));
+        Epsilon(i) = Epsilon(i) + abs(dis(selectIndex(j))-d(selectIndex(j)));
     end
 end
 
@@ -215,15 +229,16 @@ minIndex = find(Epsilon == minValue);
 fprintf('估计频率为 %.2f，%.2f，%.2f，%.2f\n', ff(1), ff(2), ff(3), ff(4));
 fprintf('估计速度为 %.2f，%.2f，%.2f，%.2f\n', vv(1), vv(2), vv(3), vv(4));
 fprintf('估计距离为 %.2f，%.2f，%.2f，%.2f\n', d(1), d(2), d(3), d(4));
-fprintf('估计的k的值是 %.2f，b 的值是 %.2f\n', res(minIndex, 1), res(minIndex, 2));
 realDis = zeros(numOfPlatForm, 1);
 % 求1，3，4点到直线的距离
 for j = 1:numOfPlatForm
     realDis(j) = pointToLineDistance(slope, realb, node(j, 1), node(j, 2));
 end
 fprintf('真实距离为 %.2f，%.2f，%.2f，%.2f\n', realDis(1), realDis(2), realDis(3), realDis(4));
+fprintf('估计的k的值是 %.2f，b 的值是 %.2f\n', res(minIndex, 1), res(minIndex, 2));
 
-% 计算点到直线的距离
+
+%% 计算点到直线的距离
 function distance = pointToLineDistance(k, b, x0, y0)
 numerator = abs(k*x0-y0+b);
 denominator = sqrt(k^2+1);

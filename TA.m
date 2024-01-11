@@ -72,7 +72,7 @@ for i = 1:size(currentA, 2)
         if abs(ts) < 1
             m = m + 1;
             res(m, :) = [xs, ys];
-            loc{m, :}= ["p"+ num2str(i), "p"+ num2str(j), "theta"+ num2str(x)];
+            loc{m, :}= ["t"+ num2str(i), "t"+ num2str(j), "theta"+ num2str(x)];
         else
         end
     end

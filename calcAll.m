@@ -168,24 +168,25 @@ for iii = 1:length(t_obs)
         end
     end
 end
-fig1 = figure('Units', 'centimeters', 'Position', [10, 10, 20, 11.24 / 15 * 15]);
+% fig1 = figure('Units', 'centimeters', 'Position', [10, 10, 20, 11.24 / 15 * 15]);
+fig1 = figure;
 figure(fig1)
 hold on
-
 axis([0, 10e3, 0, 10e3])
 title("分治贪心关联")
 for ii = 1:2
     plot(outLoctionCAX(ii, :), outLoctionCAY(ii, :), '.');
 end
 scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100);
-legend( '目标1', '目标2','观测站','Location', 'eastoutside', 'FontSize', 12)
+legend( '目标1', '目标2','观测站', 'FontSize', 12)
 hold off
 set(gca, 'Box', 'on')
 xlabel('东向坐标/m', 'FontSize', 12)
 ylabel('北向坐标/m', 'FontSize', 12)
 
 
-fig2 = figure('Units', 'centimeters', 'Position', [10, 10, 20, 11.24 / 15 * 15]);
+% fig2 = figure('Units', 'centimeters', 'Position', [10, 10, 20, 11.24 / 15 * 15]);
+fig2 = figure;
 figure(fig2)
 hold on
 for ii = 1:2
@@ -194,7 +195,7 @@ end
 axis([0, 10e3, 0, 10e3])
 title("分治贪心关联+时空关联")
 scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100);
-legend('目标1', '目标2','观测站', 'Location', 'eastoutside', 'FontSize', 12)
+legend('目标1', '目标2','观测站', 'FontSize', 12)
 hold off
 set(gca, 'Box', 'on')
 xlabel('东向坐标/m', 'FontSize', 12)

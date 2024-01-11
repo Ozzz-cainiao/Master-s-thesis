@@ -47,8 +47,7 @@ for i = 1:mpie
     w_mpie(i) = maxEigenvector(i) / sum(maxEigenvector);
 end
 
-% figure('Units', 'centimeters', 'Position', [15, 5, 20, 11.24 / 15 * 15]);
-figure
+figure('Units', 'centimeters', 'Position', [15, 5, 20, 11.24 / 15 * 15]);
 h = plot(w_mpie, 'bo-'); % 返回图的句柄
 % 在指定索引上更改数据点形状
 for i = 1:length(idx)
@@ -59,6 +58,6 @@ for i = 1:length(idx)
     hold off;
 end
 % 显示图例
-legend('原始数据', 'C1');
+legend('原始数据', 'C1', 'Location');
 title("综合支持度（筛选前后）")
 end

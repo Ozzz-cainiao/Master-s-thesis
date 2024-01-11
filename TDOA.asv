@@ -57,8 +57,8 @@ if solveType == 2 || solveType == 3
 
         if solveType == 3
             % 使用第三个平台判解
-            if abs(pdist([node(3, :), [EstX(1), EstY(1), 0]])-r(3)) ...
-                    > abs(pdist([node(3, :), [EstX(2), EstY(2), 0]])-r(3))
+            if abs(pdist([node(3, :), [EstX(1), EstY(1), 0]]) - r(3)) ...
+                > abs(pdist([node(3, :), [EstX(2), EstY(2), 0]]) - r(3)) 
                 EstX = EstX(2);
                 EstY = EstY(2);
             else
@@ -73,7 +73,7 @@ if solveType == 2 || solveType == 3
         EstX = nan;
         EstY = nan;
     end
-    % 异步解算，输入相对时延，用三个浮标，得到双解
+% 异步解算，输入相对时延，用三个浮标，得到双解
 elseif solveType == 4
     d = zeros(len, 1);
     r = zeros(len, 1);
@@ -115,20 +115,18 @@ elseif solveType == 4
             EstY(1) = py * d1 + qy;
             EstX(2) = px * d2 + qx;
             EstY(2) = py * d2 + qy;
-            %             % 这里需要冗余信息判解
-            %             % 利用第4个平台的时延信息
-            %             dis(1, 1) = pdist([node(4, :); [EstX(1, 1), EstY(1, 1), 0]]);
-            %             dis(1, 2) = pdist([node(4, :); [EstX(1, 2), EstY(1, 2), 0;]]);
-            % %             dis = pdist([node(4, :), [EstX(1), EstY(1), 0;EstX(2), EstY(2), 0;]]);
-            %             if dis(1) / c - timeDelay(4) < dis(2) / c - timeDelay(4)
-            %                 EstX = EstX(1);
-            %                 EstY = EstY(1);
-            %             else
-            %                 EstX = EstX(2);
-            %                 EstY = EstY(2);
-            %             end
-            EstX = EstX(1);
-            EstY = EstY(1);
+            % 这里需要冗余信息判解
+            % 利用第4个平台的时延信息
+            dis(1, 1) = pdist([node(4, :); [EstX(1, 1), EstY(1, 1), 0]]);
+            dis(1, 2) = pdist([node(4, :); [EstX(1, 2), EstY(1, 2), 0;]]);
+%             dis = pdist([node(4, :), [EstX(1), EstY(1), 0;EstX(2), EstY(2), 0;]]);
+            if dis(1) / c - timeDelay(4) < dis(2) / c - timeDelay(4)
+                EstX = EstX(1);
+                EstY = EstY(1);
+            else
+                EstX = EstX(2);
+                EstY = EstY(2);
+            end
         else
             EstX = nan;
             EstY = nan;
@@ -142,7 +140,8 @@ end
 res(:, 1) = EstX;
 res(:, 2) = EstY;
 loc = strings(1, len);
-for i = 1:len
-    loc(i) = "t" + num2str(i);
+for i = 1 : len
+    loc(i) = "p" + num2str(i);
 end
+% loc{1,:} = loc;
 end

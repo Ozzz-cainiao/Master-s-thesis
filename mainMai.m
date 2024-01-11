@@ -275,6 +275,8 @@ for k = 1:size(tDelayM, 1)
 
 
 end
+
+%% 这里找个G最小的，如何判断G最小？
 % 使用3平台求解，1平台判解
 % 截取当前行以后的数据
 SValue = cell(3, Nmax+1);
@@ -313,24 +315,4 @@ end
 disp('提取的数据：');
 disp(selected_data);
 tk = tDelayM{k, base}; % 时延值
-% 首先进行时延数据关联
-% 假设S1先接收到时延值，以周期k为基准，一次取出
-% 然后找到当前时刻后的N个其他平台的时延值
 
-% 首先根据方位信息得到两个平台间的时延差
-% 根据
-
-%% 考虑如何进行时延差和方位的关联
-
-%% 方位信息抗距离模糊
-% 使用方位信息解模糊周期 那就使用分治贪心关联？
-
-%% 分治贪心关联
-% 调用709函数 传入参数 角度 平台数 平台位置 目标数量
-% [outLoctionCAX, outLoctionCAY, outLoctionSPCX, outLoctionSPCY] = calcAll(angM, numOfPlatForm, node, numOfSource, t_obs, T);
-
-% 确定模糊周期后根据目标到各基元的时延进行定位 杨卓论文2.4.3
-
-%%
-
-%% ·

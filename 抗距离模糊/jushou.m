@@ -100,7 +100,7 @@ tb_t4 = mod(t4, T);
 
 %% 举手表决法
 load mohu_res;
-res_part = res([4201:12600], :);
+res_part = res(4201:12600, :);
 res_in = flipud(res_part); % 翻转所有元素
 nn = 1;
 s = length;
@@ -108,6 +108,7 @@ res_jushou = [];
 for p = 1:num
     kk = 1;
     sel_res = [];
+    % 计算每个时间点匹配度较高的结果
     for mohu1 = 0:20
         tao4 = sqrt((res_in((p - 1)*21+mohu1+1, 1) - pos_x3(s))^2+(res_in((p - 1)*21+mohu1+1, 2) - pos_y3(s))^2) / c(s);
         tao = abs(mod(tao4, T)-tb_t3(p, s));
@@ -116,6 +117,7 @@ for p = 1:num
             kk = kk + 1;
         end
     end
+    % 根据匹配的结果进行举手表决
     n = size(sel_res);
     if n(1) == 1
         res_jushou(nn, 1) = sel_res(1, 1);
@@ -123,6 +125,8 @@ for p = 1:num
         nn = nn + 1;
     else
         if nn < 3
+            % 选择最可能的位置
+            % 选择时延最小的位置
             min_tao = T;
             for i = 1:n(1)
                 tao4 = sqrt((sel_res(i, 1) - pos_x3(s))^2+(sel_res(i, 2) - pos_y3(s))^2) / c(s);
@@ -137,6 +141,8 @@ for p = 1:num
                 nn = nn + 1;
             end
         else
+            % 根据已有位置确定下一个位置
+            % 根据已有的两个位置，通过插值确定下一个可能的目标位置
             next_x = 2 * res_jushou(nn-1, 1) - res_jushou(nn-2, 1);
             next_y = 2 * res_jushou(nn-1, 2) - res_jushou(nn-2, 2);
             min_dis = 1000;
