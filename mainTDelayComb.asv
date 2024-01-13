@@ -99,19 +99,19 @@ for j = 1:numOfPlatForm % 遍历平台
     end % for k = 1:numOfSource % 遍历声源
 end % for j = 1:numOfPlatForm
 
-%% 画出目标运动的实际轨迹
-fig1 = figure('Units', 'centimeters', 'Position', [10, 5, 20, 11.24 / 15 * 15]);
-figure(fig1)
-hold on
-for i = 1:numOfSource
-    plot(sourceAll(i).Position(:, 1), sourceAll(i).Position(:, 2), '.');
-end
-scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100);
-legend('目标1', '观测站', 'Location', 'eastoutside', 'FontSize', 12)
-title('目标实际运动轨迹');
-set(gca, 'Box', 'on')
-xlabel('东向坐标/m', 'FontSize', 12)
-ylabel('北向坐标/m', 'FontSize', 12)
+% %% 画出目标运动的实际轨迹
+% fig1 = figure('Units', 'centimeters', 'Position', [10, 5, 20, 11.24 / 15 * 15]);
+% figure(fig1)
+% hold on
+% for i = 1:numOfSource
+%     plot(sourceAll(i).Position(:, 1), sourceAll(i).Position(:, 2), '.');
+% end
+% scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100);
+% legend('目标实际轨迹', '观测站', 'Location', 'eastoutside', 'FontSize', 12)
+% title('目标实际运动轨迹');
+% set(gca, 'Box', 'on')
+% xlabel('东向坐标/m', 'FontSize', 12)
+% ylabel('北向坐标/m', 'FontSize', 12)
 
 %%
 t_obs = 2 + T:T:(T_num - 10) * T; % 截取10秒以后的一段数据
@@ -119,21 +119,25 @@ angM = cell(length(t_obs), numOfPlatForm);
 tDelayM = cell(length(t_obs), numOfPlatForm);
 tDelayTM = cell(length(t_obs), numOfPlatForm);
 tarInfo = cell(length(t_obs), numOfPlatForm);
+position = cell(length(t_obs), 1);
 for iii = 1:length(t_obs)
     angM(iii, :) = arrayfun(@(s) angR{s}(~isnan(sort(angR{s}(:, t_obs(1) / T + iii - 1))), t_obs(1) / T + iii - 1), 1:numOfPlatForm, 'un', 0);
     tDelayM(iii, :) = arrayfun(@(s) tDelay{s}(~isnan(sort(tDelay{s}(:, t_obs(1) / T + iii - 1))), t_obs(1) / T + iii - 1), 1:numOfPlatForm, 'un', 0);
     tDelayTM(iii, :) = arrayfun(@(s) tDelayT{s}(~isnan(sort(tDelay{s}(:, t_obs(1) / T + iii - 1))), t_obs(1) / T + iii - 1), 1:numOfPlatForm, 'un', 0);
+    position(iii, :) = arrayfun(@(s) sourceAll(1).Position(t_obs(1)/T+iii-1, :), t_obs(1)/T+iii-1, 'un', 0);
 end
 % 使用cellfun结合匿名函数，将每个cell中的NaN值清除
 angMWithoutNaN = cellfun(@(x) x(~isnan(x)), angM, 'UniformOutput', false);
 tDelayMWithoutNaN = cellfun(@(x) x(~isnan(x)), tDelayM, 'UniformOutput', false);
 tDelayTMWithoutNaN = cellfun(@(x) x(~isnan(x)), tDelayTM, 'UniformOutput', false);
+
 %% 直接进行TDOA解算
 len = length(tDelayMWithoutNaN);
 res1 = zeros(len, 2);
 timeDelay = zeros(len, numOfPlatForm);
+position2 = zeros(len, 2);
 Node = [node, zeros(numOfPlatForm, 1)];
-
+%
 % for i = 1:len
 %     for j = 1:numOfPlatForm
 %         if ~isempty(tDelayTMWithoutNaN{i, j})
@@ -142,12 +146,13 @@ Node = [node, zeros(numOfPlatForm, 1)];
 %     end
 %     [res1(i, :), ~] = TDOA(timeDelay(i, :), Node, 4);
 % end
-% 
+%
 % figure(fig1)
 % plot(res1(:, 1), res1(:, 2), 'r.');
 % title("无距离模糊的TDOA解算轨迹");
 
 for i = 1:len
+    position2(i, :) = position{i};
     for j = 1:numOfPlatForm
         if ~isempty(tDelayMWithoutNaN{i, j})
             timeDelay(i, j) = tDelayMWithoutNaN{i, j};
@@ -156,14 +161,18 @@ for i = 1:len
     [res1(i, :), ~] = TDOA(timeDelay(i, :), Node, 4);
 end
 
-figure
-plot(res1(:, 1), res1(:, 2),'r.');
+%% 画出目标运动的实际轨迹
+fig1 = figure('Units', 'centimeters', 'Position', [10, 5, 20, 11.24 / 15 * 15]);
+figure(fig1)
 hold on
+plot(position2(:, 1), position2(:, 2), '.');
+plot(res1(:, 1), res1(:, 2), 'r.');
 scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100);
-title("TDOA解算轨迹（不进行时延差数据关联和抗距离模糊）");
-
-%% 计算消除距离模糊和时延数据对齐的结果
-
+legend('目标实际轨迹', 'TDOA解算轨迹', '观测站', 'Location', 'eastoutside', 'FontSize', 12)
+set(gca, 'Box', 'on')
+xlabel('东向坐标/m', 'FontSize', 12)
+ylabel('北向坐标/m', 'FontSize', 12)
+title("目标轨迹");
 
 %% 加上抗距离模糊
 % 结果不对，需要加上抗距离模糊
@@ -228,7 +237,10 @@ parfor i1 = 1:len
                                     % 解算点到判解平台间的距离
                                     r4 = pdist([node(4, :); temp]);
                                     nT4 = (r4 / c + tC4 - timeDelay(i1, 1)) / T;
-                                    if abs(nT4-round(nT4)) > T || r4 > Rmax || abs(tC4) > T
+%                                     if abs(nT4-round(nT4)) > T || r4 >
+%                                     Rmax || abs(tC4) > T %这里改了
+
+                                    if abs(nT4-round(nT4)) > T || r4 > Rmax || abs(tC4) > T || tC4 < 0
                                         continue;
                                     end
                                 else
@@ -247,7 +259,7 @@ parfor i1 = 1:len
                                     % 解算点到判解平台间的距离
                                     r1 = pdist([node(1, :); temp]);
                                     nT1 = (r1 / c + tC1 - timeDelay(i2, 2)) / T;
-                                    if abs(nT1-round(nT1)) > T || r1 > Rmax || abs(tC1) > T
+                                    if abs(nT1-round(nT1)) > T || r1 > Rmax || abs(tC1) > T || tC1 < 0
                                         continue;
                                     end
                                 else
@@ -266,7 +278,7 @@ parfor i1 = 1:len
                                     % 解算点到判解平台间的距离
                                     r2 = pdist([node(2, :); temp]);
                                     nT2 = (r2 / c + tC2 - timeDelay(i3, 3)) / T;
-                                    if abs(nT2-round(nT2)) > T || r2 > Rmax || abs(tC2) > T
+                                    if abs(nT2-round(nT2)) > T || r2 > Rmax || abs(tC2) > T || tC2 < 0
                                         continue;
                                     end
                                 else
@@ -285,7 +297,7 @@ parfor i1 = 1:len
                                     % 解算点到判解平台间的距离
                                     r3 = pdist([node(3, :); temp]);
                                     nT3 = (r3 / c + tC3 - timeDelay(i4, 4)) / T;
-                                    if abs(nT3-round(nT3)) > T || r3 > Rmax || abs(tC3) > T
+                                    if abs(nT3-round(nT3)) > T || r3 > Rmax || abs(tC3) > T || tC3 < 0
                                         continue;
                                     end
                                 else
@@ -294,7 +306,7 @@ parfor i1 = 1:len
 
                                 %% 判断是否是有效搜索
                                 distances = pdist(pointOff);
-                                if (all(distances < 200))
+                                if (all(distances < 100))
                                     EstX{end+1} = mean(pointOff(:, 1));
                                     EstY{end+1} = mean(pointOff(:, 2));
                                 end
@@ -305,6 +317,10 @@ parfor i1 = 1:len
             end
         end
     end
+    %% 在抗模糊和定位后，利用定位后的点推算模糊周期，重新用优化算法重新解算
+    
+    
+
     res2{i1} = {EstX, EstY};
 end
 toc;
@@ -316,14 +332,11 @@ res4 = zeros(len, 2);
 for i = 1:len
     res3{i} = [sort(cell2mat(res2{i}{1}))', sort(cell2mat(res2{i}{2}))'];
     % 计算三分之一的位置
-        index = ceil(size(res3{i}(:, 1), 1) / 3);
-        res4(i, :) = [res3{i}(index, 1), res3{i}(index, 2)];
+    index = ceil(size(res3{i}(:, 1), 1)/3);
+    res4(i, :) = [res3{i}(index, 1), res3{i}(index, 2)];
 end
 figure
-plot(res4(:, 1), res4(:, 2),'.');
-
-
-       
+plot(res4(:, 1), res4(:, 2), '.');
 
 %% 异步抗距离模糊  参考JD1CJXPor SolTrackOutofStep_style1 暂不可用
 % trackNum = 0;

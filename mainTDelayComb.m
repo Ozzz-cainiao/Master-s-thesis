@@ -114,7 +114,7 @@ end % for j = 1:numOfPlatForm
 % ylabel('北向坐标/m', 'FontSize', 12)
 
 %%
-t_obs = 2 + T:T:(T_num - 10) * T; % 截取10秒以后的一段数据
+t_obs = 2 + T: T: T_num * T; % 截取10秒以后的一段数据
 angM = cell(length(t_obs), numOfPlatForm);
 tDelayM = cell(length(t_obs), numOfPlatForm);
 tDelayTM = cell(length(t_obs), numOfPlatForm);
@@ -192,7 +192,7 @@ end
 trackNum = 0;
 res2 = cell(len, 1);
 tic;
-parfor i1 = 1:len
+for i1 = 1:len
     disp(i1);
     tDelay = zeros(1, numOfPlatForm);
     EstX = cell(1, 1);
@@ -306,7 +306,7 @@ parfor i1 = 1:len
 
                                 %% 判断是否是有效搜索
                                 distances = pdist(pointOff);
-                                if (all(distances < 200))
+                                if (all(distances < 30))
                                     EstX{end+1} = mean(pointOff(:, 1));
                                     EstY{end+1} = mean(pointOff(:, 2));
                                 end
@@ -317,6 +317,10 @@ parfor i1 = 1:len
             end
         end
     end
+
+
+    
+
     res2{i1} = {EstX, EstY};
 end
 toc;

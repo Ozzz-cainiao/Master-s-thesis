@@ -172,9 +172,6 @@ realangM = cell(length(t_obs), numOfPlatForm);
 fasdhjkf = cell(length(t_obs), numOfPlatForm);
 for iii = 1:length(t_obs)
     angM(iii, :) = arrayfun(@(s) lfmCellArray{s}(~isnan(sort(lfmCellArray{s}(:, t_obs(1) / T + iii - 1))), t_obs(1) / T + iii - 1), 1:numOfPlatForm, 'un', 0);
-    %     angM(iii, :) = arrayfun(@(s) lfmCellArray{s}(~isnan(sort(lfmCellArray{s}(:, iii))), iii), 1:numOfPlatForm, 'un', 0); % 把这个观测平台全为nan的值删掉
-    %     angMb(iii, :) = arrayfun(@(s) lfmCellArray{s}(~isnan((lfmCellArray{s}(:, iii))), iii), 1:numOfPlatForm, 'un', 0); % 把这个观测平台全为nan的值删掉
-    %     realangM(iii, :) = arrayfun(@(s) reallfmCellArray{s}(~isnan(sort(reallfmCellArray{s}(:, iii))), iii), 1:numOfPlatForm, 'un', 0);
     realangM(iii, :) = arrayfun(@(s) reallfmCellArray{s}(~isnan(sort(reallfmCellArray{s}(:, t_obs(1) / T + iii - 1))), t_obs(1) / T + iii - 1), 1:numOfPlatForm, 'un', 0);
     fasdhjkf(iii, :) = arrayfun(@(s) fajksd{s}(~isnan(sort(fajksd{s}(:, t_obs(1) / T + iii - 1))), t_obs(1) / T + iii - 1), 1:numOfPlatForm, 'un', 0);
 end
@@ -213,102 +210,9 @@ TALo(twotarget_info_matrix, node);
 % 传出 2*5000
 % [outLoctionCAX, outLoctionCAY, outLoctionSPCX, outLoctionSPCY] = calcAll(angM, numOfPlatForm, node, numOfSource, t_obs, T);
 
-%% ==========================绘图区===============================
-
-% % 迭代绘制轨迹
-% for i = 2:length(t_obs)
-%     % 更新绘图数据
-%     set(h, 'XData', x(1:i), 'YData', y(1:i));
-%
-%     % 刷新图形
-%     drawnow;
-%
-%     % 添加延时，以调整动画速度
-%     pause(0.1);
-% end
-
-% figure
-% hold on
-% axis([0, 10e3, 0, 10e3])
-% title("分治贪心关联")
-% for ii = 1:numOfSource
-%     plot(outLoctionCAX(ii, :), outLoctionCAY(ii, :), '.')
-%     % 刷新图形
-%     drawnow;
-%     % 添加延时，以调整动画速度
-%     pause(0.5);
-%
-% end
-%
-%
-% figure
-% hold on
-% for ii = 1:numOfSource
-%     plot(outLoctionSPCX(ii, :), outLoctionSPCY(ii, :), '.')
-%     axis([0, 10e3, 0, 10e3])
-%     title("分治贪心关联+时空关联")
-% end
 
 %%
 disp("程序执行结束！")
-% 显示目标信息矩阵
-% for i = 1 : 10
-%     i
-%     disp(target_info_matrix{1, i, 1});
-% end
-% for i = 1 : 10
-%     i
-%     disp(angR{1}(i, 1));
-% end
-% for i = 1 : 4
-%     i
-%     disp(target_info_matrix{1, 9, i});
-% end
-
-%% 将传感器数据格式化为数组
-% % 定义四个结构体
-% sensorData(1).angle = 43.421747348254513;
-% sensorData(1).type = 'CW';
-% sensorData(1).fre = 2000;
-%
-% sensorData(2).angle = 36.235899172122004;
-% sensorData(2).type = 'LFM';
-% sensorData(2).fre = 0;
-%
-% sensorData(3).angle = 45.763144826916495;
-% sensorData(3).type = 'CW';
-% sensorData(3).fre = [1000 2000];
-%
-% sensorData(4).angle = 74.618253631672147;
-% sensorData(4).type = 'CW';
-% sensorData(4).fre = [1000 2000];
-%
-% % 输出格式化后的结构数组
-% disp(sensorData);
-
-%% 数据对齐
-% 确保不同传感器的数据在时间和空间上是对齐的
-% 假装是对齐的 ，不要给自己增加实时处理的麻烦！
-
-%% 数据合并
-% 将来自不同传感器的数据按照时间和空间坐标存储在一个统一的数据结构中，
-% 以便稍后的分析决策
-% 基于时间的融合或基于特征的融合
-
-%% 基于特征的融合
-% CW
-
-% LFM
-
-% NOISE
-
-%% 特征提取和融合
-
-%% 多参量融合，看看怎么多参量融合
-
-%% 分层关联
-
-%% 实现纯方位交汇定位 经典写法
 
 %% 两两组合解算目标点
 function [EstX, EstY] = AOA1(Zt, node)
@@ -359,8 +263,4 @@ res(1) = (xx1 + xx2) / 2;
 res(2) = (yy1 + yy2) / 2;
 end
 
-%% 实现双曲面交汇定位
 
-%% 实现时延差/方位联合定位
-
-%% TDOA/AOA
