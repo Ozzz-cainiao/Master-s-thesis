@@ -77,7 +77,6 @@ if nonNaNCountPerRow(t) >= 2
     %% 计算TDOA
     if size(node, 1) > 3
         [res{2}, loc{2, :}] = myTDOA(currentT, nodeT);
-
     else
         [res{2}, loc{2, :}] = TDOA(currentT, nodeT, 4);
     end
@@ -90,15 +89,13 @@ end
 Res = res{1}; % 5
 Res = [Res; res{2}]; % 4
 Res = [Res; res{3}]; % 6
-% Res应该先去除掉无解的结果
-% 找到包含nan或inf的行号
-rowsToRemove = any(isnan(Res), 2) | any(isinf(Res), 2);
-% 去除包含nan或inf的行
-Res = Res(~rowsToRemove, :);
+rowsToRemove = any(isnan(Res), 2) | any(isinf(Res), 2); % 找到包含nan或inf的行号
+% Res = Res(~rowsToRemove, :); % 去除包含nan或inf的行
+
 Loc = loc{1}; % 5
 Loc = [Loc; loc{2}]; % 1
 Loc = [Loc; loc{3}]; % 6
-Loc = Loc(~rowsToRemove, :);
+% Loc = Loc(~rowsToRemove, :);
 
 %% 计算聚集度
 rho = 200;

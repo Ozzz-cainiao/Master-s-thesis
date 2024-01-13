@@ -125,65 +125,6 @@ for j = 1:numOfPlatForm % 遍历平台
 end % for i = 1:T_num
 
 
-%%
-a = 10
-% 显示目标信息矩阵
-% for i = 1 : 10
-%     i
-%     disp(target_info_matrix{1, i, 1});
-% end
-% for i = 1 : 10
-%     i
-%     disp(angR{1}(i, 1));
-% end
-% for i = 1 : 4
-%     i
-%     disp(target_info_matrix{1, 9, i});
-% end
 
-%% 将传感器数据格式化为数组
-% % 定义四个结构体
-% sensorData(1).angle = 43.421747348254513;
-% sensorData(1).type = 'CW';
-% sensorData(1).fre = 2000;
-%
-% sensorData(2).angle = 36.235899172122004;
-% sensorData(2).type = 'LFM';
-% sensorData(2).fre = 0;
-%
-% sensorData(3).angle = 45.763144826916495;
-% sensorData(3).type = 'CW';
-% sensorData(3).fre = [1000 2000];
-%
-% sensorData(4).angle = 74.618253631672147;
-% sensorData(4).type = 'CW';
-% sensorData(4).fre = [1000 2000];
-%
-% % 输出格式化后的结构数组
-% disp(sensorData);
-
-%% 数据对齐
-% 确保不同传感器的数据在时间和空间上是对齐的
-% 假装是对齐的 ，不要给自己增加实时处理的麻烦！
-
-%% 数据合并
-% 将来自不同传感器的数据按照时间和空间坐标存储在一个统一的数据结构中，
-% 以便稍后的分析决策
-% 基于时间的融合或基于特征的融合
-
-%% 基于特征的融合
-% CW
-
-% LFM
-
-% NOISE
-
-%% 特征提取和融合
-
-%% 多参量融合，看看怎么多参量融合
-
-
-
-%% 实现时延差/方位联合定位
 
 
