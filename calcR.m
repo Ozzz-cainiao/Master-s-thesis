@@ -1,12 +1,13 @@
 %% 使用分治贪心关联获取线序号 然后获取时延关系解算
+% 需要传入时延和方位信息
 %% 传入参数：角度，平台数目，平台位置，目标数 当前时刻  观测周期
 % arrR 5000*3 cell 时间 目标 平台数
-function [outLoctionCAX, outLoctionCAY, outLoctionSPCX, outLoctionSPCY] = calcR(arrR, pNum, node, num, t_obs, T)
+function [outTimeM, choose] = calcR(timeR ,arrR, pNum, node, num, t_obs, T)
 
 var2d = 1.5^2;
 var2 = var2d * (pi / 180)^2;
 c = 1500;
-
+% choose = [];
 %% ==========================分治贪心关联===============================
 dPonit = 10;
 PD = 0.99; %0.9        	% 检测概率2~3个目标时是0.99，4~5个目标时是0.9
@@ -16,18 +17,24 @@ Q = 10; % 列表最大长度
 I = 3; % 并行次优条数
 [outLoctionCAX, outLoctionCAY] = deal(nan(num, length(t_obs)));
 outAngM = cell(num, length(t_obs));
+outTimeM = cell(num, length(t_obs));
+choose = cell(length(t_obs), 1);
 for iii = 1:length(t_obs)
     disp(['正在处理', num2str(iii)])
     angM1 = arrR(iii, :);
+    timeM1 = timeR(iii, :);
     % 这里angM1可能有nan值
     ns = cellfun(@(x)size(x, 1), angM1); % 每个平台的测向线个数
+    % 这里根据目标个数和平台个数进行区分 两目标两平台无解
     if num == 2 && pNum == 2
+        %% 在这里加上优化 两目标两平台怎么做
         if all(ns ~= 1) % 无解只剩下两个平台有测量，不能进行关联，只能对一个目标进行处理
             [outLocX, outLocY] = deal(nan);
+            
         else % 只有一个测量，直接进行定位
             Z = cell2mat(angM1(locs_notnan));
             [outLocX, outLocY] = LSM(Z, node);
-        end
+        end 
     else
         % 每个平台的测向线个数
         ns = arrayfun(@(x) size(angM1{x}(~isnan(angM1{x})), 1), 1:pNum);
@@ -39,14 +46,16 @@ for iii = 1:length(t_obs)
             Z = arrayfun(@(x) {angM1{x}(~isnan(angM1{x}))}, 1:pNum, 'un', 0);
             outDCGT = dcgt(Z, node, [var2, PD, Fai], [M, Q, I]);
             outLocs = outDCGT(:, 1:length(Z)); % 输出的线序号结果
+            choose{iii} = outLocs;
             outLocX = outDCGT(:, length(Z)+1);
             outLocY = outDCGT(:, length(Z)+2);
         end
     end
     %% 根据线序号 找到对应的时延值
+    % 将对应的信息提取出来， 存到一个新的数组中
 
 
-    %%% 实现跟原有轨迹的跟踪
+    %%% 10个点以后，实现跟原有轨迹的跟踪
     if iii > dPonit
         inputX = outLoctionCAX(:, iii-10:iii-1);
         inputY = outLoctionCAY(:, iii-10:iii-1);
@@ -56,6 +65,9 @@ for iii = 1:length(t_obs)
     else
         [inputX, inputY] = deal(nan(num, 1));
     end
+
+
+    % 计算解算点与已有的轨迹之间的距离
     di = zeros(size(outLocX, 1), size(inputX, 1)); % 与既有轨迹的距离的预分配
     for i = 1:size(outLocX, 1)
         for ii = 1:size(inputX, 1)
@@ -67,12 +79,18 @@ for iii = 1:length(t_obs)
         end
     end
     di(isnan(di)) = 1e8;
+
+
+    % 匈牙利算法，二分图匹配
     if size(di, 1) > size(di, 2) % HungarianAlgorithm.m只能对列数≥行数的正确关联
         [~, zeta] = HungarianAlgorithm(di');
         zeta = zeta';
     else
         [~, zeta] = HungarianAlgorithm(di);
     end
+
+
+    % 
     EstX = outLocX.' * zeta;
     EstY = outLocY.' * zeta;
     EstLocs = outLocs.' * zeta;
@@ -86,18 +104,22 @@ for iii = 1:length(t_obs)
         outLoctionCAX(2:num, iii) = nan;
         outLoctionCAY(2:num, iii) = nan;
         outAngM{1, iii} = arrayfun(@(s) angM1{s}(EstLocs(1, s)), 1:pNum);
+        outTimeM{1, iii} = arrayfun(@(s) timeM1{s}(EstLocs(1, s)), 1:pNum);
     else
         outLoctionCAX(1:num, iii) = EstX';
         outLoctionCAY(1:num, iii) = EstY';
         for i = 1:num
             if all(isnan(EstLocs(i, :))) % 全为nan，即唯有测量
                 outAngM{i ,iii} = [];
+                outTimeM{i, iii} = [];
             else
                 for s = 1:pNum
                     if EstLocs(i, s) ~= 0
-                        outAngM{i ,iii}(s) = angM1{s}(EstLocs(i, s));
+                        outAngM{i ,iii}(s) = angM1{s}(EstLocs(i, s)); % 提取出的定位角度组合
+                        outTimeM{i ,iii}(s) = timeM1{s}(EstLocs(i, s)); % 
                     else
                         outAngM{i ,iii}(s) = nan;
+                        outTimeM{i ,iii}(s) = nan; % 
                     end
                 end
             end
@@ -106,6 +128,18 @@ for iii = 1:length(t_obs)
 end
 % save('midResult.mat','outLoctionCAX','outLoctionCAY','outAngM')
 % load midResult.mat
+
+
+%% 将挑选出的时间outTimeM来计算位置
+return 
+
+% 调用TDOA函数
+
+% [res, loc] = TDOA(timeDelay, node, solveType)
+
+
+
+
 
 %% ==========================分治贪心关联+时空关联===============================
 d_min = 5; % 时空关联解算阈值

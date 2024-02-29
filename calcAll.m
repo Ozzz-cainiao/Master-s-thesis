@@ -18,6 +18,9 @@ Q = 10; % 列表最大长度
 I = 3; % 并行次优条数
 [outLoctionCAX, outLoctionCAY] = deal(nan(num, length(t_obs)));
 outAngM = cell(num, length(t_obs));
+
+% 用来保存不同目标的数据的数组
+targetData = cell(num, 1);
 for iii = 1:length(t_obs)
     disp(['正在处理', num2str(iii)])
     angM1 = arrR(iii, :);
@@ -41,6 +44,8 @@ for iii = 1:length(t_obs)
             Z = arrayfun(@(x) {angM1{x}(~isnan(angM1{x}))}, 1:pNum, 'un', 0);
             outDCGT = dcgt(Z, node, [var2, PD, Fai], [M, Q, I]);
             outLocs = outDCGT(:, 1:length(Z)); % 输出的线序号结果
+            % 根据线序号的索引，追加每个目标的方位和时延信息？
+            
             outLocX = outDCGT(:, length(Z)+1);
             outLocY = outDCGT(:, length(Z)+2);
         end
@@ -79,6 +84,11 @@ for iii = 1:length(t_obs)
     EstY(EstY == 0) = nan;
     EstLocs(:, all(EstLocs == 0, 1)) = nan;
     EstLocs = EstLocs.';
+    % 在这里将用到的测向线分配就可以
+
+
+
+    
     if length(EstX) == 1
         outLoctionCAX(1, iii) = EstX(1)';
         outLoctionCAY(1, iii) = EstY(1)';
@@ -503,7 +513,7 @@ while q <= size(W_Plus7, 1)
         Lq = L(ii, :);
         locs91 = find(Lq == 1)';
         if sum(Lq == 1) == 2 % 存在两个关联量则检查是否能同时输出
-            if R8(locs91(1), locs91(2)) ~= 1 % 不可以同时输出
+            if R8(locs91(1), locs91(2)) ~= 1 % 不互斥 不可以同时输出
                 locsdet = cat(1, locsdet, ii);
             end
         elseif sum(Lq == 1) > 2

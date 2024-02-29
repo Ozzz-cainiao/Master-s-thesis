@@ -193,10 +193,10 @@ xlabel('东向坐标/m', 'FontSize', 12)
 ylabel('北向坐标/m', 'FontSize', 12)
 
 %% 计算定位误差 定位结果顺序和原顺序不一致
-birthPlace = sortrows(birthPlace, 1);
-res = sortrows([resX, resY], 1);
-for i = 1 : numOfSource
-    for j = 1 : numOfSource
-        error(i) = min(error(i), pdist2(res(i,:), birthPlace(j, :)));
-    end
-end
+% birthPlace = sortrows(birthPlace, 1);
+% res = sortrows([resX, resY], 1);
+% for i = 1 : numOfSource
+%     for j = 1 : numOfSource
+%         error(i) = min(error(i), pdist2(res(i,:), birthPlace(j, :)));
+%     end
+% end

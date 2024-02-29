@@ -90,12 +90,12 @@ Res = res{1}; % 5
 Res = [Res; res{2}]; % 4
 Res = [Res; res{3}]; % 6
 rowsToRemove = any(isnan(Res), 2) | any(isinf(Res), 2); % 找到包含nan或inf的行号
-% Res = Res(~rowsToRemove, :); % 去除包含nan或inf的行
+Res = Res(~rowsToRemove, :); % 去除包含nan或inf的行
 
 Loc = loc{1}; % 5
-Loc = [Loc; loc{2}]; % 1
+Loc = [Loc; loc{2}]; % 4
 Loc = [Loc; loc{3}]; % 6
-% Loc = Loc(~rowsToRemove, :);
+Loc = Loc(~rowsToRemove, :);
 
 %% 计算聚集度
 rho = 200;
