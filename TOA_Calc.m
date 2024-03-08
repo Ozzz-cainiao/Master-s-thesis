@@ -30,11 +30,15 @@ node = [
 % 计算目标到各接收器的距离
 d = zeros(size(node, 1), 1);
 t = zeros(size(node, 1), 1);
+a = zeros(size(node, 1), 1);
 for i = 1 : size(node, 1)
     d(i) = norm(target_position - node(i,:));
     t(i) = d(i) / v;
+    relatiPos = target_position - node(i, :);
+    a(i) = atan2d(relatiPos(2), relatiPos(1));
 end
-
+% [res, ~] = TA1(t(1:2), a(1: 2)', node(1: 2, :));
+[res, ~] = TA1(t, a', node);
 
 %% 线性解算方法 多平台选3，然后计算出目标位置
 % 开始4选3
@@ -75,7 +79,7 @@ else
     X = nan(2, 1);
 end
 end
-%% 非线性解算 三平台 两个方程求双解 第三个方程判解
+%% 非线性解算 三平台 两个方程求双解 第三个方程判解 可用
 function X = TOA2(timeDelay, node)
 X = nan(2, 2);
 c = 1500;

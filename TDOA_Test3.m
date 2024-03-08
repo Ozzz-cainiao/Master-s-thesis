@@ -1,62 +1,47 @@
 %**************************************************************************
-% 文件名: E:\坚果云同步文件夹\毕设——非合作多目标定位\FinalCode\TDOA_Test.m
+% 文件名: E:\坚果云同步文件夹\毕设——非合作多目标定位\FinalCode\TDOA_Test3.m
 % 版本: v1.0
-% 作者: 网络资源
-% 联系方式: https://blog.csdn.net/weixin_44606638/article/details/106390708
-% 日期: 2023-11-21
-% 描述: 要求一：编写两个函数TDOA_CHAN和TDOA_Taylor得到位置的估计。
-%       要求二：用RMSE实现两种算法的性能比较, 得到两种算法的RMSE曲线对比图，
-%       横坐标为噪声方差，纵坐标为RMSE。
-% 输入:
-% 输出:
+% 作者: ZLM
+% 联系方式: Liminzhang7@outlook.com
+% 日期: 2024-03-01
+% 描述: 测试两个TDOA算法，对于固定点是否可用
+% 输入:  
+% 输出:  
 %**************************************************************************
 
-%% TDOA部分：
-% %% the simulation of TDOA localization algorithm
-close all;
-clear;
-clc;
-%定义四个参与基站的坐标位置
-BS1 = [0, 0];
-BS2 = [5000, 0];
-BS3 = [5000, 5000];
-BS4 = [0, 5000];
-BS5 = [600, 500];
-%移动台MS的初始估计位置
-MS = [3500, 1500];
-A = [BS1; BS2; BS3; BS4; BS5];
-% std_var = [1e-2, 5e-2, 1e-1, 5e-1, 1]; %范围
-std_var = zeros(1, size(A, 1)); %范围
+%% 
+clc
+close all
+clear
+% 目标位置（单位：米）
+target_position = [200, 300];
 
-%A=[BS1;BS2;BS3;BS4]; %矩阵A包含4个初始坐标
+% 信号传播速度（假设单位为 m/s）
+v = 1500; % 声速
 
-len = size(A, 1);
-number = 10000;
-for j = 1:length(std_var) %循环
-    error1 = 0; %初始误差置为0
-    error2 = 0; %初始误差置为0
-    std_var1 = std_var(j); %令std_var1等于当前数组的值
-    for i = 1:number %多次循环
-        %r1=A-ones(4,1)*MS;
-        r1 = A - ones(len, 1) * MS;
-        r2 = (sum(r1.^2, 2)).^(1 / 2); % 目标到观测平台的距离
-        %r=r2(2:end,:)-ones(3,1)*r2(1,:)+std_var1*randn(3,1); %表示从[2,i]开始MS与基站i和基站1的距离差
-        r = r2(2:end, :) - ones(len-1, 1) * r2(1, :) + std_var1 * randn(len-1, 1); % 目标到2，3，4基站与1基站之间的距离差
-        sigma = std_var1^2;
-        res1 = TDOACHAN(A, r, sigma); % 调用TDOACHAN函数
-        res2 = TDOATaylor(A, r, sigma); %调用TDOATalor函数
-        error1 = error1 + norm(MS-res1)^2; %移动台MS估计位置与计算的到的距离的平方
-        error2 = error2 + norm(MS-res2)^2; %移动台MS估计位置与计算的到的距离的平方
-    end
-    RMSE1(j) = (error1 / number)^(1 / 2); %均方根误差
-    RMSE2(j) = (error2 / number)^(1 / 2); %均方根误差
+% 接收器的位置（假设单位为米）
+node = [
+    0, 0; 
+    1e3, 0; 
+    0, 1e3;
+    1e3, 1e3 
+];
+
+% 计算目标到各接收器的距离
+d = zeros(size(node, 1), 1);
+t = zeros(size(node, 1), 1);
+a = zeros(size(node, 1), 1);
+for i = 1 : size(node, 1)
+    d(i) = norm(target_position - node(i,:));
+    t(i) = d(i) / v;
+    relatiPos = target_position - node(i, :);
+    a(i) = atan2d(relatiPos(2), relatiPos(1));
 end
-% plot
-semilogx(std_var, RMSE1, '-O', std_var, RMSE2, '-s') % x轴取对数，X轴范围是1e-2到1,Y轴的范围是变动的
-xlabel('The standard deviation of measurement noise (m)');
-ylabel('RMSE');
-legend('TDOA-CHAN', 'TDOA-Taylor');
-
+% [res, ~] = TA1(t(1:2), a(1: 2)', node(1: 2, :));
+% res = TDOACHAN(node, t, 0);
+nodeT = [node, zeros(4, 1)];
+[res, ~] = TDOA(t', nodeT, 4);
+n = 10;
 %% TDOA - CHAN:
 function res = TDOACHAN(A, p, sigma)
 % A is the coordinate of BSs

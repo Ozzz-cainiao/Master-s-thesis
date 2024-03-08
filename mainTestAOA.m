@@ -208,7 +208,7 @@ TALo(twotarget_info_matrix, node);
 %% 分治贪心关联
 % 调用709函数 传入参数 角度 平台数 平台位置 目标数量
 % 传出 2*5000
-% [outLoctionCAX, outLoctionCAY, outLoctionSPCX, outLoctionSPCY] = calcAll(angM, numOfPlatForm, node, numOfSource, t_obs, T);
+[outLoctionCAX, outLoctionCAY, outLoctionSPCX, outLoctionSPCY] = calcAll(angM, numOfPlatForm, node, numOfSource, t_obs, T);
 
 
 %%

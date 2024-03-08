@@ -1,5 +1,6 @@
 %% 使用分治贪心关联获取线序号 然后获取时延关系解算
 % 需要传入时延和方位信息
+
 %% 传入参数：角度，平台数目，平台位置，目标数 当前时刻  观测周期
 % arrR 5000*3 cell 时间 目标 平台数
 function [outTimeM, choose] = calcR(timeR ,arrR, pNum, node, num, t_obs, T)
@@ -7,7 +8,7 @@ function [outTimeM, choose] = calcR(timeR ,arrR, pNum, node, num, t_obs, T)
 var2d = 1.5^2;
 var2 = var2d * (pi / 180)^2;
 c = 1500;
-% choose = [];
+
 %% ==========================分治贪心关联===============================
 dPonit = 10;
 PD = 0.99; %0.9        	% 检测概率2~3个目标时是0.99，4~5个目标时是0.9
@@ -24,25 +25,34 @@ for iii = 1:length(t_obs)
     angM1 = arrR(iii, :);
     timeM1 = timeR(iii, :);
     % 这里angM1可能有nan值
-    ns = cellfun(@(x)size(x, 1), angM1); % 每个平台的测向线个数
+    %     ns = cellfun(@(x)size(x, 1), angM1); % 每个平台的测向线个数
+    ns = cellfun('prodofsize', angM1);
+
     % 这里根据目标个数和平台个数进行区分 两目标两平台无解
     if num == 2 && pNum == 2
-        %% 在这里加上优化 两目标两平台怎么做
+        % todo 两目标两平台怎么做
         if all(ns ~= 1) % 无解只剩下两个平台有测量，不能进行关联，只能对一个目标进行处理
             [outLocX, outLocY] = deal(nan);
-            
+
         else % 只有一个测量，直接进行定位
             Z = cell2mat(angM1(locs_notnan));
             [outLocX, outLocY] = LSM(Z, node);
-        end 
+        end
     else
         % 每个平台的测向线个数
-        ns = arrayfun(@(x) size(angM1{x}(~isnan(angM1{x})), 1), 1:pNum);
+%                 ns = arrayfun(@(x) size(angM1{x}(~isnan(angM1{x})), 1), 1:pNum);
         if all(ns == 1)
-            Z = arrayfun(@(x) angM1{x}(~isnan(angM1{x})), 1:pNum);
+            %             disp("all(ns == 1)")
+            %             Z = arrayfun(@(x) angM1{x}(~isnan(angM1{x})), 1:pNum, 'un');
+            Z = cell2mat(angM1);
+            %             Z = arrayfun(@(x) angM1{x}(~isnan(angM1{x})), 1:pNum, 'un');
             [outLocX, outLocY] = LSM(Z, node);
         else
             % Zt是1*numOfPlatform的cell数组，每个cell中是它的测向线
+            fprintf("ns= %d\n", ns);
+            if all(ns == 0)
+                continue;
+            end
             Z = arrayfun(@(x) {angM1{x}(~isnan(angM1{x}))}, 1:pNum, 'un', 0);
             outDCGT = dcgt(Z, node, [var2, PD, Fai], [M, Q, I]);
             outLocs = outDCGT(:, 1:length(Z)); % 输出的线序号结果
@@ -51,11 +61,9 @@ for iii = 1:length(t_obs)
             outLocY = outDCGT(:, length(Z)+2);
         end
     end
-    %% 根据线序号 找到对应的时延值
-    % 将对应的信息提取出来， 存到一个新的数组中
 
-
-    %%% 10个点以后，实现跟原有轨迹的跟踪
+    %% 10个点以后，实现跟原有轨迹的跟踪
+    % inputX:2*10double
     if iii > dPonit
         inputX = outLoctionCAX(:, iii-10:iii-1);
         inputY = outLoctionCAY(:, iii-10:iii-1);
@@ -66,8 +74,7 @@ for iii = 1:length(t_obs)
         [inputX, inputY] = deal(nan(num, 1));
     end
 
-
-    % 计算解算点与已有的轨迹之间的距离
+    %% 计算解算点与已有的轨迹之间的距离
     di = zeros(size(outLocX, 1), size(inputX, 1)); % 与既有轨迹的距离的预分配
     for i = 1:size(outLocX, 1)
         for ii = 1:size(inputX, 1)
@@ -78,9 +85,9 @@ for iii = 1:length(t_obs)
             di(i, ii) = mean(d1(~isnan(d1)));
         end
     end
+
+
     di(isnan(di)) = 1e8;
-
-
     % 匈牙利算法，二分图匹配
     if size(di, 1) > size(di, 2) % HungarianAlgorithm.m只能对列数≥行数的正确关联
         [~, zeta] = HungarianAlgorithm(di');
@@ -89,8 +96,7 @@ for iii = 1:length(t_obs)
         [~, zeta] = HungarianAlgorithm(di);
     end
 
-
-    % 
+    %
     EstX = outLocX.' * zeta;
     EstY = outLocY.' * zeta;
     EstLocs = outLocs.' * zeta;
@@ -103,6 +109,20 @@ for iii = 1:length(t_obs)
         outLoctionCAY(1, iii) = EstY(1)';
         outLoctionCAX(2:num, iii) = nan;
         outLoctionCAY(2:num, iii) = nan;
+        %         if all(isnan(EstLocs(i, :)))
+        %             outAngM{1, iii} = [];
+        %             outTimeM{i, iii} = [];
+        %         else
+        %             for s = 1:pNum
+        %                 if EstLocs(i, s) ~= 0
+        %                     outAngM{i ,iii}(s) = angM1{s}(EstLocs(1, s)); % 提取出的定位角度组合
+        %                     outTimeM{i ,iii}(s) = timeM1{s}(EstLocs(1, s)); %
+        %                 else
+        %                     outAngM{i ,iii}(s) = nan;
+        %                     outTimeM{i ,iii}(s) = nan; %
+        %                 end
+        %             end
+        %         end
         outAngM{1, iii} = arrayfun(@(s) angM1{s}(EstLocs(1, s)), 1:pNum);
         outTimeM{1, iii} = arrayfun(@(s) timeM1{s}(EstLocs(1, s)), 1:pNum);
     else
@@ -116,10 +136,10 @@ for iii = 1:length(t_obs)
                 for s = 1:pNum
                     if EstLocs(i, s) ~= 0
                         outAngM{i ,iii}(s) = angM1{s}(EstLocs(i, s)); % 提取出的定位角度组合
-                        outTimeM{i ,iii}(s) = timeM1{s}(EstLocs(i, s)); % 
+                        outTimeM{i ,iii}(s) = timeM1{s}(EstLocs(i, s)); %
                     else
                         outAngM{i ,iii}(s) = nan;
-                        outTimeM{i ,iii}(s) = nan; % 
+                        outTimeM{i ,iii}(s) = nan; %
                     end
                 end
             end
@@ -129,21 +149,10 @@ end
 % save('midResult.mat','outLoctionCAX','outLoctionCAY','outAngM')
 % load midResult.mat
 
-
-%% 将挑选出的时间outTimeM来计算位置
-return 
-
-% 调用TDOA函数
-
-% [res, loc] = TDOA(timeDelay, node, solveType)
-
-
-
-
-
 %% ==========================分治贪心关联+时空关联===============================
-d_min = 5; % 时空关联解算阈值
-DeTh = 10; % 迭代次数阈值
+d_min = 2; % 时空关联解算阈值
+DeTh = 500; % 迭代次数阈值
+loc = cell(length(t_obs), num);
 [outLoctionSPCX, outLoctionSPCY] = deal(nan(num, length(t_obs)));
 for iii = 1:length(t_obs)
     disp(['正在处理', num2str(iii)])
@@ -164,16 +173,25 @@ for iii = 1:length(t_obs)
                 r_e = sqrt(x_e.^2+y_e.^2); % 估计位置与观测站之间的距离
                 t_e = r_e / c;
                 % 当前位置，针对的方位数据是在几个帧后获得的
-                t_ed = round(t_e-t_e(1), 1); % 时延差
-                loc_ed = round(t_ed/T) + iii; % 位置 这是绝对的帧号，不是相对的 
+                % 这里的问题是为什么选定平台1 它不是最早有数据的 会导致有帧号找不到
+                t_ed = round(t_e-t_e(1), 1); % 时延差 四舍五入到小数点后最近的1位数
+                % 参考王静飞论文  选取位置到平台最远的那个作为基准
+%                 t_max = max(t_e);
+%                 t_ed = t_max - t_e; % 时延差 四舍五入到小数点后最近的1位数
+%                 loc_ed = iii - round(t_ed/T); % 位置 这是绝对的帧号，不是相对的
 
-                % 只找到时延差向后的
+                %  t_min = min(t_e);
+                %  t_ed = round(t_e - t_min, 1); % 时延差 四舍五入到小数点后最近的1位数
+                loc_ed = iii + floor(t_ed/T); % 位置 这是绝对的帧号，不是相对的
+                % 只找到时延差向后的 还应该往前找
                 if all(loc_ed > 0 & loc_ed < length(t_obs)) % 时空关联能够进行
                     angM2 = zeros(1, pNum);
                     for s = 1:pNum
+                        % 如果该找的这个帧数据不存在，就向后找
+                        N = 30; % 确定向后寻找的范围
                         if isempty(outAngM{i, loc_ed(s)})
                             ij = 1;
-                            while ij < 10
+                            while ij < N
                                 if (loc_ed(s) + ij < size(outAngM, i)) && ~isempty(outAngM{i, loc_ed(s)+ij})
                                     angM2(s) = outAngM{i, loc_ed(s)+ij}(s); % 取到新的时延的角度值
                                     break
@@ -185,9 +203,9 @@ for iii = 1:length(t_obs)
                             angM2(s) = outAngM{i, loc_ed(s)}(s);
                         end
                     end
+
+                    % 找到了之后开始计算新的位置
                     [midNewCAX, midNewCAY] = LSM(angM2, node);
-                    %                 elseif d ~= inf | iikk ~= 1
-                    %                     midOldCAX = midNewCAX;
                 else
                     outLoctionSPCX(i, iii) = midOldCAX;
                     outLoctionSPCY(i, iii) = midOldCAY;
@@ -198,37 +216,86 @@ for iii = 1:length(t_obs)
                 midOldCAY = midNewCAY;
                 iikk = iikk + 1;
             end
-            % 根据angR来找时间的索引
-            index = zeros(1, pNum);
-            for s = 1 : pNum
-%                 % 使用find函数寻找目标数值的索引
-%                 [row, col] = find(angM1 == angM2(s));
-%                 disp("找到的行号为%d， 列号为%d", row, col);
-                % 使用 cellfun 和 any 结合 == 来生成逻辑索引
-                logicalIndex = cellfun(@(x) isnumeric(x) && any(x == angM2(s)), arrR);
-    
-                % 然后判断线序号
-                
-                % 使用 find 函数找到逻辑索引中为 true 的位置
-                index(s) = find(logicalIndex); % 找到了帧序号
-
+            % 这里的有问题
+            if exist('loc_ed', 'var') == 1
+                % 找到对应的索引
+                loc{iii, i} = loc_ed; % 找这个附近2帧范围内的，提取时延，使用时延计算
             end
+            clear loc_ed;
             outLoctionSPCX(i, iii) = midOldCAX;
             outLoctionSPCY(i, iii) = midOldCAY;
         end
     end
 end
+
+%% 加上时延数据时空关联  先在所有数据都能接收到的基础上进行 即第7秒，所有平台都接收到了目标的信息
+% loc中的时延信息，是相对可靠的，基本只有0-3帧的误差，同时测得的绝对时延变化不大。
+% 下面实现根据方位关联的反馈信息实现时延定位
+% 时延信息先不加误差
+% 计算loc中的帧号的±2的时间
+% 使用什么算法？
+[TA_resX, TA_resY] = deal(nan(length(t_obs), num));
+TA_res = cell(length(t_obs), num);
+[TDOA_resX, TDOA_resY] = deal(nan(length(t_obs), num));
+TDOA_res = cell(length(t_obs), num);
+% 一维时间
+for iii = 1:length(t_obs)
+    % 二维目标
+    for i = 1:num
+        % 1. 先提取出loc中的帧号
+        frame = loc{iii, i};
+        if isempty(frame)
+            continue;
+        end
+        frame(frame <= 1) = 1;
+        frame(frame >= length(t_obs)) = length(t_obs);
+
+        c_angle = nan(size(frame));
+        c_time = nan(size(frame));
+
+        % 从outAngM和outTimeM中提取对应的方位和时延数据
+        for j = 1:size(frame, 1)
+            c_angle(j) = outAngM{i, frame(j)}(j);
+            c_time(j) = outTimeM{i, frame(j)}(j);
+        end
+
+        % 提取平台位置
+
+        node;
+
+        % 使用TA进行计算?
+        [res, ~] = TA1(c_time, c_angle, node);
+        TA_res{iii, i} = res;
+        TA_resX(iii, i) = res(1);
+        TA_resY(iii, i) = res(2);
+        % 使用纯方位计算的位置
+        fprintf(" 使用TA计算的结果为：%f, %f\n", res);
+        fprintf("使用AOA计算的结果为：%f, %f \n", [outLoctionSPCX(i, iii), outLoctionSPCY(i, iii)]);
+        fprintf("这两个点之间的距离为： %f\n", pdist([res; [outLoctionSPCX(i, iii), outLoctionSPCY(i, iii)]]));
+
+        % 使用TDOA进行计算
+        nodeT = [node, zeros(size(node, 1), 1)];
+        [res, ~] = TDOA(c_time', nodeT, 4);
+        TDOA_res{iii, i} = res;
+        TDOA_resX(iii, i) = res(1);
+        TDOA_resY(iii, i) = res(2);
+
+    end
+end
+
+
 fig1 = figure('Units', 'centimeters', 'Position', [10, 10, 20, 11.24 / 15 * 15]);
 figure(fig1)
 hold on
 
 axis([0, 10e3, 0, 10e3])
 title("分治贪心关联")
-for ii = 1:2
+for ii = 1:num
     plot(outLoctionCAX(ii, :), outLoctionCAY(ii, :), '.');
 end
 scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100);
-legend( '目标1', '目标2','观测站','Location', 'eastoutside', 'FontSize', 12)
+legend('目标1', '目标2', '观测站', 'Location', 'eastoutside', 'FontSize', 12)
+% legend('目标1', '目标2', '目标3', '观测站', 'Location', 'eastoutside', 'FontSize', 12)
 hold off
 set(gca, 'Box', 'on')
 xlabel('东向坐标/m', 'FontSize', 12)
@@ -238,18 +305,52 @@ ylabel('北向坐标/m', 'FontSize', 12)
 fig2 = figure('Units', 'centimeters', 'Position', [10, 10, 20, 11.24 / 15 * 15]);
 figure(fig2)
 hold on
-for ii = 1:2
-    plot(outLoctionSPCX(ii, :), outLoctionSPCY(ii, :), '.') 
+for ii = 1:num
+    plot(outLoctionSPCX(ii, :), outLoctionSPCY(ii, :), '.')
 end
 axis([0, 10e3, 0, 10e3])
 title("分治贪心关联+时空关联")
 scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100);
-legend('目标1', '目标2','观测站', 'Location', 'eastoutside', 'FontSize', 12)
+legend('目标1', '目标2', '观测站', 'Location', 'eastoutside', 'FontSize', 12)
+% legend('目标1', '目标2', '目标3', '观测站', 'Location', 'eastoutside', 'FontSize', 12)
 hold off
 set(gca, 'Box', 'on')
 xlabel('东向坐标/m', 'FontSize', 12)
 ylabel('北向坐标/m', 'FontSize', 12)
 
+
+fig3 = figure('Units', 'centimeters', 'Position', [10, 10, 20, 11.24 / 15 * 15]);
+figure(fig3)
+hold on
+for ii = 1:num
+    plot(TA_resX(:, ii), TA_resY(:, ii), '.')
+end
+axis([0, 10e3, 0, 10e3])
+title("TA算法，加上了帧号")
+scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100);
+legend('目标1', '目标2', '观测站', 'Location', 'eastoutside', 'FontSize', 12)
+% legend('目标1', '目标2', '目标3', '观测站', 'Location', 'eastoutside', 'FontSize', 12)
+hold off
+set(gca, 'Box', 'on')
+xlabel('东向坐标/m', 'FontSize', 12)
+ylabel('北向坐标/m', 'FontSize', 12)
+
+
+fig4 = figure('Units', 'centimeters', 'Position', [10, 10, 20, 11.24 / 15 * 15]);
+figure(fig4)
+hold on
+for ii = 1:num
+    plot(TDOA_resX(:, ii), TDOA_resY(:, ii), '.')
+end
+axis([0, 10e3, 0, 10e3])
+title("TDOA算法")
+scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100);
+legend('目标1', '目标2', '观测站', 'Location', 'eastoutside', 'FontSize', 12)
+% legend('目标1', '目标2', '目标3', '观测站', 'Location', 'eastoutside', 'FontSize', 12)
+hold off
+set(gca, 'Box', 'on')
+xlabel('东向坐标/m', 'FontSize', 12)
+ylabel('北向坐标/m', 'FontSize', 12)
 end
 
 %% ==========================子函数===============================
@@ -326,23 +427,27 @@ for k = 1:size(iter1, 1)
     point = iter22(Num22, :); % 筛选出来的测量序号+位置
     kk = 1;
     kknum = 1;
-    locs22 = cell(sum(1:size(point, 1)-1), 3); % 预分配
-    while kk < size(point, 1)
-        point1 = cell2mat(point(kk, pNum+1:pNum+2)).';
-        for ii = kk + 1:size(point, 1)
-            point2 = cell2mat(point(ii, pNum+1:pNum+2)).';
-            locs22{kknum, 1} = Num22(kk); % iter22中行序号--对应点
-            locs22{kknum, 2} = Num22(ii); % iter22中行序号--对应点
-            locs22{kknum, 3} = norm(point2-point1); % 距离
-            kknum = kknum + 1;
+    if size(point, 1) > 1
+        locs22 = cell(sum(1:size(point, 1)-1), 3); % 预分配
+        while kk < size(point, 1)
+            point1 = cell2mat(point(kk, pNum+1:pNum+2)).';
+            for ii = kk + 1:size(point, 1)
+                point2 = cell2mat(point(ii, pNum+1:pNum+2)).';
+                locs22{kknum, 1} = Num22(kk); % iter22中行序号--对应点
+                locs22{kknum, 2} = Num22(ii); % iter22中行序号--对应点
+                locs22{kknum, 3} = norm(point2-point1); % 解算点之间的距离
+                kknum = kknum + 1;
+            end
+            kk = kk + 1;
         end
-        kk = kk + 1;
-    end
-    [~, locs23] = sort(cell2mat(locs22(:, 3))); % 按升序排列后的序数
-    if length(locs23) > M
-        W = cat(1, W, locs22(locs23(1:M), :)); % W中三列分为iter22中行序号；iter22中行序号；距离
+        [~, locs23] = sort(cell2mat(locs22(:, 3))); % 按升序排列后的序数
+        if length(locs23) > M
+            W = cat(1, W, locs22(locs23(1:M), :)); % W中三列分为iter22中行序号；iter22中行序号；距离
+        else
+            W = cat(1, W, locs22(locs23(1:length(locs23)), :)); % iter22中的组合x和y中间的距离
+        end
     else
-        W = cat(1, W, locs22(locs23(1:length(locs23)), :));
+
     end
 
 end
