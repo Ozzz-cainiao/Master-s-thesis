@@ -40,7 +40,7 @@ for iii = 1:length(t_obs)
         end
     else
         % 每个平台的测向线个数
-%                 ns = arrayfun(@(x) size(angM1{x}(~isnan(angM1{x})), 1), 1:pNum);
+        %                 ns = arrayfun(@(x) size(angM1{x}(~isnan(angM1{x})), 1), 1:pNum);
         if all(ns == 1)
             %             disp("all(ns == 1)")
             %             Z = arrayfun(@(x) angM1{x}(~isnan(angM1{x})), 1:pNum, 'un');
@@ -176,9 +176,9 @@ for iii = 1:length(t_obs)
                 % 这里的问题是为什么选定平台1 它不是最早有数据的 会导致有帧号找不到
                 t_ed = round(t_e-t_e(1), 1); % 时延差 四舍五入到小数点后最近的1位数
                 % 参考王静飞论文  选取位置到平台最远的那个作为基准
-%                 t_max = max(t_e);
-%                 t_ed = t_max - t_e; % 时延差 四舍五入到小数点后最近的1位数
-%                 loc_ed = iii - round(t_ed/T); % 位置 这是绝对的帧号，不是相对的
+                %                 t_max = max(t_e);
+                %                 t_ed = t_max - t_e; % 时延差 四舍五入到小数点后最近的1位数
+                %                 loc_ed = iii - round(t_ed/T); % 位置 这是绝对的帧号，不是相对的
 
                 %  t_min = min(t_e);
                 %  t_ed = round(t_e - t_min, 1); % 时延差 四舍五入到小数点后最近的1位数
@@ -225,6 +225,30 @@ for iii = 1:length(t_obs)
             outLoctionSPCX(i, iii) = midOldCAX;
             outLoctionSPCY(i, iii) = midOldCAY;
         end
+    end
+end
+
+%% 根据新定出来的位置，去计算到各个节点之间的时延差，然后重新解算位置
+for iii = 1:length(t_obs)
+    for i = 1:num
+        if isnan(outLoctionSPCX(i, iii))
+            disp("这个结果为nan");
+
+        else
+            midOldCAX = outLoctionSPCX(i, iii);
+            midOldCAY = outLoctionSPCY(i, iii);
+            % 计算到各平台之间的距离
+            x_e = midOldCAX - node(:, 1); % 估计位置与观测站横轴距离
+            y_e = midOldCAY - node(:, 2); % 估计位置与观测站纵轴距离
+            r_e = sqrt(x_e.^2+y_e.^2); % 估计位置与观测站之间的距离
+            t_e = r_e / c;
+            t_ed = round(t_e-t_e(1), 1); % 时延差 四舍五入到小数点后最近的1位数
+            loc_ed = iii + floor(t_ed/T); % 位置 这是绝对的帧号，不是相对的
+
+            fprintf("当前帧号为：%d， 目标号为：%d,  找到的时延为： %d %d %d %d\n", iii, i, loc_ed);
+
+        end
+
     end
 end
 

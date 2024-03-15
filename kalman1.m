@@ -1,35 +1,59 @@
 close all
 clear
 clc
+%% 观测平台位置
+
+
 
 %% CV 模型+高斯噪声 kalman滤波
+
 % 时间步长
 dt = 1;
 
 % 状态转移矩阵
-A = [1, dt; 0, 1];
+A = [1, dt; 0, 1]; % 
 
 % 观测矩阵
-H = [1, 0];
+H = [1, 0]; % 位置可观测，速度不可观测
 
 % 过程噪声协方差
 Q = [1, 0; 0, 3];
 
 % 观测噪声协方差
-R = 2;
+R = 1;
+
+t = 0: dt: 100; % 时间点
+v = 5; % 目标真实的速度
+x_real = v * t; % 目标真实的位置
+x_ob = x_real + randn(size(t)) * sqrt(R); % 目标观测的位置
 
 % 初始状态估计
-x_est = [0; 0];
+x_est = [0; 0]; % [位置； 速度]
 
 % 初始误差协方差
 P = eye(2);
 
 % 数据（用您的观测数据替换这里的数据）
 observations = [1.2, 2.3, 3.4, 4.5, 5.5]; % 示例观测数据
-
+res = zeros(size(observations, 2), 2);
+i = 1;
 % 卡尔曼滤波
-for z = observations
-    z
+% for z = observations
+%     % 预测
+%     x_pred = A * x_est;
+%     P_pred = A * P * A' + Q;
+% 
+%     % 更新
+%     K = P_pred * H' * inv(H*P_pred*H'+R);
+%     x_est = x_pred + K * (z - H * x_pred);
+%     P = (eye(2) - K * H) * P_pred;
+% 
+%     % 打印或存储结果
+%     disp(x_est);
+%     res(i,:) = x_est;
+%     i = i + 1;
+% end
+for z = x_ob
     % 预测
     x_pred = A * x_est;
     P_pred = A * P * A' + Q;
@@ -41,8 +65,11 @@ for z = observations
 
     % 打印或存储结果
     disp(x_est);
+    res(i,:) = x_est;
+    i = i + 1;
 end
-
+figure
+plot(res(:, 1));
 
 %% 自己照着chatGPT 的提示写的
 
@@ -95,92 +122,5 @@ xlabel step
 ylabel 位置
 legend('实际位置', '测量位置', '先验估计位置', '后验估计位置')
 
-%% 某版本  不太可用
-% %状态转移矩阵
-% F = [1, T, 0, 0; ...
-%     0, 1, 0, 0; ...
-%     0, 0, 1, T; ...
-%     0, 0, 0, 1];
-% H = [1, 0, 0, 0; ...
-%     0, 0, 1, 0];
-% %过程噪声
-% B = [T^2 / 2, 0; ...
-%     T, 0; ...
-%     0, T^2 / 2; ...
-%     0, T]; %过程噪声分布矩阵
-% v = sigma_u^2; %x方向的过程噪声向量//相当于Q
-% V = B * v * B';
-% % %观测噪声??
-% % W = B * noise_x;
-%
-% %------Data initial-------%
-% X_real = zeros(4, N);
-% X = zeros(4, N);
-%
-% Z1 = zeros(2, N);
-% X_EKF1 = zeros(4, N);
-% % P1 = zeros(4,4,N);
-% % K1 = zeros(4,2,N);
-% % Hj1 = zeros(2,4,N);
-% Z2 = zeros(2, N);
-% Z_polar2 = zeros(2, N);
-% X_EKF2 = zeros(4, N);
-% % P2 = zeros(4,4,N);
-% % K2 = zeros(4,2,N);
-% % Hj2 = zeros(2,4,N);
-%
-% X_CC = zeros(4, N);
-% X_BC = zeros(4, N);
-% bias = zeros(8, N, M);
-%
-% %-------Track Initial-------%
-% X_real(:, 1) = [Rx, vx, Ry, vy]'; %x: km,km/s
-%
-% X_EKF1(:, 1) = [Rx, 0, Ry, 0];
-% X_EKF2(:, 1) = [Rx, 0, Ry, 0];
-% X_CC(:, 1) = [Rx, 0, Ry, 0];
-% X_BC(:, 1) = [Rx, 0, Ry, 0];
-%
-% %Monto-carlo
-% for m = 1:M
-%     noise_x = randn(2, N) .* sigma_x; %过程噪声
-%     noise_z1 = randn(2, N) .* sigma_z; %观测噪声
-%     noise_z2 = randn(2, N) .* sigma_z;
-%
-%     %构造 真实轨迹X 与 观测轨迹Z
-%     for n = 2:N
-%         if n == 30
-%             X_real(2, n-1) = 1;
-%         end
-%         X_real(:, n) = F * X_real(:, n-1);
-%     end
-%     X = X_real + B * noise_x;
-%     Z1 = H * X + noise_z1 - [x1, 0; 0, y1] * ones(2, N);
-%     Z2 = H * X + noise_z1 - [x2, 0; 0, y2] * ones(2, N);
-%
-%     %这里可以写成function的形式
-%     P_BC = P1;
-%     for n = 2:N
-%         x_predict = F * X_EKF1(:, n-1); %状态一步预测
-%         p_predict = F * P1 * F' + V; %协方差一步预测
-%         S = H * p_predict * H' + R1; %新息协方差
-%         K1 = p_predict * H' / S; %增益
-%         X_EKF1(:, n) = x_predict + K1 * (Z1(:, n) - H * x_predict + [x1; y1]); %状态更新方程
-%         P1 = (eye(4) - K1 * H) * p_predict; %协方差更新方程 %后面一半要不要？
-%
-%         x_predict2 = F * X_EKF2(:, n-1); %状态一步预测
-%         p_predict2 = F * P2 * F' + V; %协方差一步预测
-%         S2 = H * p_predict2 * H' + R2; %新息协方差
-%         K2 = p_predict2 * H' / S2; %增益
-%         X_EKF2(:, n) = x_predict2 + K2 * (Z2(:, n) - H * x_predict2 + [x2; y2]); %状态更新方程
-%         P2 = (eye(4) - K2 * H) * p_predict2; %协方差更新方程 %后面一半要不要？
-%
-%         P_CC = inv(inv(P1)+inv(P2));
-%         X_CC(:, n) = P_CC * (P1 \ X_EKF1(:, n) + P2 \ X_EKF2(:, n));
-%
-%         P_BC = (eye(4) - K2 * H) * F * P_BC * F' * (eye(4) - K1 * H)';
-%         X_BC(:, n) = X_EKF2(:, n) + (P2 - P_BC) / (P1 + P2 - 2 * P_BC) * (X_EKF1(:, n) - X_EKF2(:, n));
-%     end
-% end
 
 
