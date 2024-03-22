@@ -9,13 +9,13 @@
 % 输出:  
 %**************************************************************************
 function [res, loc] = TA1(currentT, currentA, nodeT)
-c = 1500;
 % 两两组合 开始计算
 % 开始多选2
 if size(nodeT, 1) > 2
     combinationsT = nchoosek(currentT, 2);
     % 使用nchoosek函数生成所有可能的组合的索引
     combinationIndices = nchoosek(1:size(nodeT, 1), 2);
+   
     for index = 1:size(combinationsT, 1)
         timeDelay = combinationsT(index, :);
         node = nodeT(combinationIndices(index, :), :);
@@ -27,7 +27,11 @@ if size(nodeT, 1) > 2
     end
     % 结果取平均
     res = res(find(~isnan(res(:, 1))), :);
-    res = mean(res);
+    if size(res, 1) > 1
+        res = mean(res, 1);
+    elseif size(res, 1) < 1
+        res = nan(1, 2);
+    end
 elseif size(nodeT, 1) == 2
     res = calc(currentT, currentA, nodeT);
 end

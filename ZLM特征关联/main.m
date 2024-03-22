@@ -4,7 +4,7 @@
 % 作者: ZLM
 % 联系方式: Liminzhang7@outlook.com
 % 日期: 2024-03-12
-% 描述: 特征关联主程序，在这个程序内部实现灰色关联和模糊数学关联, 
+% 描述: 特征关联主程序，在这个程序内部实现灰色关联和模糊数学关联,
 %       暂时不加传播时延，使用蒙特卡罗统计
 
 % 输入:
@@ -45,7 +45,7 @@ F1 = [1, 0, T, 0; ...
 F2 = [0.5 * T^2, 0; ...
     0, 0.5 * T^2; ...
     T, 0; ...
-    0, T];% 
+    0, T]; %
 
 %% 布放目标
 initial_position1 = [4e3, 7e3]; % 初始位置目标1
@@ -67,8 +67,6 @@ feature3 = {5, {320, 455, 560, 730, 890}, 420, 2, 2}; % 线谱数量， 线谱�
 source3 = SoundSource('CW', feature3, 100, initial_position3, velocity3, F1, F2, acc3);
 % sourceAll = [source1];
 sourceAll = [source1, source2, source3];
-
-
 
 %%
 % 每条报文包括线谱频率、线谱幅度、线谱个数等K项目标特征
@@ -117,47 +115,61 @@ realangR = cell(1, numOfPlatForm); % 存放真实的角度
 realwuT = cell(1, numOfPlatForm); % 存放无时延的真实的角度
 % feature_matrix = cell(1, T_num);
 feature_matrix = cell(numOfPlatForm, numOfSource);
-res_feature = generate_feature_vector(feature1);
-%% 获取每个平台的每个目标信息
-for j = 1:numOfPlatForm % 遍历平台
-    %     feature_matrix{j} = cell(numOfPlatForm, numOfSource);
-    angR{j} = nan(T_num+100, numOfSource); % 现在只用来存放方位信息
-    timeR{j} = nan(T_num+100, numOfSource);
-    for k = 1:numOfSource % 遍历声源
-        % 创建结构体数组
-        numStructs = T_num + 100;
-        myStructArray = repmat(struct('angle', nan, 'type', nan, 'fre', nan, 't_delay', nan), numStructs, 1);
-        % 填充结构体数组
-        for i = 1:T_num
-            if i == 1
-                [angle, ~, t_delay, type, fre] = platFormAll(j).getTargetInfo(sourceAll(k), 0);
-                t_Num = round(t_delay/dt) + i; % 放到此时刻传播时延之前的时刻
-                %                 myStructArray(i) = struct('angle', angle, 'type', type, 'fre', fre, 't_delay', t_delay);
-                angR{j}(i, k) = angle + sqrt(var2d) * randn;
-                timeR{j}(i, k) = t_delay;
-                feature_matrix{j, k} = fre;
-            else
-                sourceAll(k) = sourceAll(k).updatePosition();
-                [angle, ~, t_delay, type, fre] = platFormAll(j).getTargetInfo(sourceAll(k), dt);
-                t_Num = round(t_delay/dt) + i; % 放到此时刻传播时延之前的时刻
-                %                 myStructArray(i) = struct('angle', angle, 'type', type, 'fre', fre, 't_delay', t_delay);
-                angR{j}(i, k) = angle + sqrt(var2d) * randn; % 这个结果是度
-                timeR{j}(i, k) = t_delay;
-            end
-        end % for i = 1: T_num
-        % 将结构体数组存放在当前的位置
-        target_info_matrix{j, k} = myStructArray;
-    end % for k = 1:numOfSource % 遍历声源
-end % for j = 1:numOfPlatForm
 
-% 将feature_matrix先叠到一起
-% 用reshape函数将A转换为一个12x1的cell矩阵
-feature_matrix_1 = reshape(feature_matrix', 1, []);
-feature_matrix_1 = feature_matrix_1.';
+%% 开始生成观测特征向量
+% for i = 1:100
+%     res_feature{i, 1} = generate_feature_vector(feature1);
+%     x = create_new_feature_vector();
+% %     disp(x);
+% 
+% end
+
+%% 获取每个平台的每个目标信息
 % 获取目标方位量测
 % 获取目标方位上的功率谱分布函数和线谱频率
 % 利用不用观测站量测的线谱特征之间的模糊关系，获取已关联的线谱特征子集和待关联线谱特征的模糊关系矩阵
 % 构建模糊关系矩阵，利用模糊关系矩阵进行目标定位批号二维关联
+
+% 确保来自同一个平台的不会关联上
+numOfM = 100; % 控制蒙特卡洛的次数
+for i = 1:numOfM
+    P_Featu = cell(numOfPlatForm, 1);
+    for j = 1:numOfPlatForm % 遍历平台
+        % 平台观测到的特征向量
+        for k = 1:numOfSource % 遍历声源
+%             % 虚警
+%             if randi([1, 20]) == 1
+%                 % 创造出一个不存在的目标特征向量
+%                 P_Featu{j}{end + 1} = create_new_feature_vector();
+%             % 漏报
+%             elseif randi([1, 20]) == 2
+%                 continue;  
+%             % 正常
+%             else
+%                 P_Featu{j}{end + 1} = generate_feature_vector(feature1);
+%             end
+            P_Featu{j}{end + 1} = generate_feature_vector(feature1);
+        end % for k = 1:numOfSource % 遍历声源
+    end % for j = 1:numOfPlatForm
+    % 本次观测内
+    specific(P_Featu);
+
+    % 组成特征矩阵，
+    % 基准特征
+
+
+    n = 10;
+
+
+
+
+
+
+
+
+end
+
+
 
 % 将feature_matrix_1变为特征矩阵
 % 遍历每个 feature 单元格，提取数据并拼接
@@ -206,47 +218,150 @@ for i = 1:R
     Rab(i, :) = Rabrec; % 每一行是
 end
 
-
 %% 模糊数学处理
+
 %% 添加一个重新获取特征向量的函数
 function feature_vector = generate_feature_vector(feature1)
-    % 解析输入特征
-    num_lines = feature1{1}; % 线谱数量
-    line_freqs = feature1{2}; % 线谱频率
-    axis_freq = feature1{3}; % 轴频
-    num_blades = feature1{4}; % 叶片数
-    num_harmonics = feature1{5}; % 谐波个数
+% 解析输入特征
+num_lines = feature1{1}; % 线谱数量
+line_freqs = feature1{2}; % 线谱频率
+axis_freq = feature1{3}; % 轴频
+num_blades = feature1{4}; % 叶片数
+num_harmonics = feature1{5}; % 谐波个数
 
-    % 生成特征向量
-    % 1. 线谱频率
-    generated_line_freqs = line_freqs; % 先初始化为原始数据
-    if randi([1, 10]) == 1
-        % 以10%的概率删除一个线谱频率
-        if numel(generated_line_freqs) > 1
-            idx = randi(numel(generated_line_freqs));
-            generated_line_freqs(idx) = [];
-        end
-    elseif randi([1, 10]) == 1
-        % 以10%的概率增加一个线谱频率
-        idx = randi(numel(generated_line_freqs) + 1);
-        generated_line_freqs = [generated_line_freqs(1:idx-1), randi([400, 1000]), generated_line_freqs(idx:end)];
-    end
-    num_lines = length(generated_line_freqs);
+% 生成特征向量
+% 1. 线谱频率
+generated_line_freqs = line_freqs; % 先初始化为原始数据
+% if randi([1, 20]) == 1
+%     % 以10%的概率删除一个线谱频率
+%     if numel(generated_line_freqs) > 1
+%         idx = randi(numel(generated_line_freqs));
+%         generated_line_freqs(idx) = [];
+%     end
+% elseif randi([1, 20]) == 2
+%     % 以10%的概率增加一个线谱频率
+%     idx = randi(numel(generated_line_freqs)+1);
+%     generated_line_freqs = [generated_line_freqs(1:idx-1), {randi([200, 1000])}, ...
+%         generated_line_freqs(idx:end)];
+% end
 
-    % 2. 线谱频率高斯分布
-    generated_line_freqs = generated_line_freqs + normrnd(0, 5, size(generated_line_freqs));
+% 转换为数组形式
+generated_line_freqs = cell2mat(generated_line_freqs);
 
-    % 3. 其他异常频率
-    % 在 1 到 1000 之间生成一个随机异常频率
+% 2. 线谱频率高斯分布
+generated_line_freqs = sort(generated_line_freqs + normrnd(0, 3, size(generated_line_freqs)));
+
+num_lines = size(generated_line_freqs, 2);
+
+% 3. 其他异常频率
+% 在 1 到 1000 之间生成一个随机异常频率
+% anomaly_freq = randi([1, 1000]);
+% 4. 轴频、叶片数和谐波个数均匀分布
+generated_axis_freq = axis_freq + randi([-1, 1]);
+generated_num_blades = num_blades + randi([-1, 1]);
+generated_num_harmonics = num_harmonics + randi([-1, 1]);
+
+% 构建特征向量
+feature_vector = {num_lines, generated_line_freqs, generated_axis_freq, ...
+    generated_num_blades, generated_num_harmonics};
+end
+
+function feature_vector = create_new_feature_vector()
+    % 1. 线谱数量
+    num_lines = randi([1, 10]);
+
+    % 2. 线谱频率
+    line_freqs = sort(randi([400, 1000], 1, num_lines));
+
+    % 3. 轴频
+    axis_freq = randi([100, 500]);
+
+    % 4. 叶片数
+    num_blades = randi([1, 10]);
+
+    % 5. 谐波个数
+    num_harmonics = randi([1, 10]);
+
+    % 6. 其他异常频率
     anomaly_freq = randi([1, 1000]);
 
-    % 4. 轴频、叶片数和谐波个数均匀分布
-    generated_axis_freq = axis_freq + randi([-1, 1]);
-    generated_num_blades = num_blades + randi([-1, 1]);
-    generated_num_harmonics = num_harmonics + randi([-1, 1]);
-
     % 构建特征向量
-    feature_vector = {num_lines, generated_line_freqs, anomaly_freq, ...
-        generated_axis_freq, generated_num_blades, generated_num_harmonics};
+    feature_vector = {num_lines, {line_freqs}, axis_freq, num_blades, num_harmonics};
 end
-% 
+
+% 对特征向量进行区分的函数
+% input: 行：平台数，列 特征向量个数
+function specific(input)
+% 创建一个相同大小的空cell矩阵，并将每个元素置为0
+match_labels = cellfun(@(x) cell(size(x)), input, 'UniformOutput', false);
+degree = cellfun(@(x) cell(size(x)), input, 'UniformOutput', false);
+% 初始化一个标记号
+label = 1;
+
+% 逐个遍历每个元素
+for i = 1:size(input, 1)  % 遍历每一行
+    for j = 1:size(input{i}, 2)  % 遍历当前行的每个元素
+        if isempty(match_labels{i}{j}) % 如果当前元素还没有被标记
+            % 计算当前元素与其他行的匹配度
+            base_feature = input{i}{j};
+            match_labels{i}{j} = label;
+            for k = i+1:size(input, 1)  % 从下一行开始遍历
+                for l = 1:size(input{k}, 2)  % 遍历下一行的每个元素
+                    % 计算匹配度，这里假设你有一个函数match_degree计算匹配度
+                    degree = match_degree(base_feature, input{k}{l});
+                    if degree > 0.35
+                        if isempty(match_labels{k}{l}) % 如果下一行当前元素还没有被标记
+                            match_labels{k}{l} = label;  % 标记
+                        end
+                    end
+                end
+            end
+            if isempty(match_labels{i}{j})  % 如果当前元素计算完毕仍然为空，标记为0
+                match_labels{i}{j} = 0;
+            end
+            label = label + 1;  % 更新标记号
+        end
+    end
+end
+
+% 将cell转换为数组
+for i = 1 : size(match_labels)
+    match_labels{i} = cell2mat(match_labels{i});
+end
+% 输出标记结果
+disp(match_labels);
+
+
+end
+% 计算b对a的隶属度
+function res = match_degree(a, b)
+
+% 定义隶属度函数
+num_lines_membership = @(x) trapmf(x, [a{1}-2, a{1}, a{1}+1, a{1}+2]);
+freq_membership = @(x, center) trapmf(x, [center - 5, center - 1, center + 1, center+ 5]); % 频率隶属度函数为以特征值为中心的高斯分布，方差为3,标准差就是√3
+
+% freq_membership = @(x, center) normpdf(x, center, 9); % 频率隶属度函数为以特征值为中心的高斯分布，方差为3,标准差就是√3
+
+% 计算b对a隶属度
+b_num_lines_membership = num_lines_membership(b{1});
+
+for i = 1:numel(b{2}{1})
+    nv = nearest_value(b{2}{1}(i), a{2});
+    b_freq_membership(i) = freq_membership(b{2}{1}(i), nv);
+end
+
+% 将隶属度加权
+res = 0.2 * b_num_lines_membership + 0.8 * sum(b_freq_membership);
+end
+function res = nearest_value(x, array)
+    min_diff = inf;
+    nearest_val = [];
+    for i = 1:size(array{1}, 2)
+        diff = norm(array{1}(i) - x);
+        if diff < min_diff
+            min_diff = diff;
+            nearest_val = array{1}(i);
+        end
+    end
+    res = nearest_val;
+end

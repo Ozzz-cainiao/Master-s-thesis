@@ -85,6 +85,7 @@ realwuT = cell(1, numOfPlatForm); % 存放真实的角度
 
 % 获取每个平台的每个目标信息
 for j = 1:numOfPlatForm % 遍历平台
+    sourceAll = [source1, source2];
     angR{j} = nan(numOfSource, T_num+100); % 现在只用来存放方位信息
     realangR{j} = nan(numOfSource, T_num+100);
     for k = 1:numOfSource % 遍历声源

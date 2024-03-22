@@ -54,7 +54,7 @@ classdef Platform
             end
 
         end
-        % 获取目标信息的方法  在这里加上传播时延
+        % 获取目标信息的方法  在这里加上传播时延, 这个是带多普勒偏移的
         function [angle, distance, t_delay, type, fre, obj] = getTargetInfoFre(obj, target, dt, k, b)
             % 根据输入参数调用
             obj.t = obj.t + dt;

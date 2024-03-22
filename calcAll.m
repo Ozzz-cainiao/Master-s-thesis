@@ -371,13 +371,13 @@ for ii = 1:pNum
         Set{ii} = cat(1, Set{ii}, Lamdad_W(logical(cell2mat(locs41')), :));
     end
 end
-s = 2;
-Z = Set{1, s-1};
+s = 2; % 从第2个平台开始关联
+Z = Set{1, s-1}; % 初始化第一个平台的所有节点
 W_Plus = {};
 while s <= pNum
     Z1 = {};
-    z = Set{1, s};
-    NumZ = size(Z, 1);
+    z = Set{1, s}; % 待融合的节点
+    NumZ = size(Z, 1); % 已融合的部分
     Numz = size(z, 1);
     R = zeros(NumZ, Numz);
     for ii = 1:NumZ
