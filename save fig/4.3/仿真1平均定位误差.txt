@@ -1,0 +1,6 @@
+目标1 TDOA_distances的平均值为18.323136
+目标1   TA_distances的平均值为15.956015
+目标1  AOA_distances的平均值为22.563545
+目标2 TDOA_distances的平均值为23.186106
+目标2   TA_distances的平均值为15.216169
+目标2  AOA_distances的平均值为35.202319

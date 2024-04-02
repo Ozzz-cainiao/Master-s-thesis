@@ -10,14 +10,12 @@
 %**************************************************************************
 
 function [] = TALo(target_info_matrix, node)
-
-%% 输入参数，当前测量的角度和时延 每一列是一个目标
+% 输入参数，当前测量的角度和时延 每一列是一个目标
 numOfSource = size(target_info_matrix, 2);
 numOfPlatForm = size(target_info_matrix, 1);
 T_num = size(target_info_matrix{1, 1}, 1);
 tMatrix = cell(numOfSource, 1);
 aMatrix = cell(numOfSource, 1);
-res = cell(numOfSource, 1);
 for i = 1:numOfSource
 
     %% 针对不同平台

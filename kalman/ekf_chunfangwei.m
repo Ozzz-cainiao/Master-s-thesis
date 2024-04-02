@@ -74,6 +74,59 @@ xlabel('时间(s)');
 ylabel('角度值(°)');
 title('真实角度和引入噪声的角度比较');
 
+
+%%
+
+% 初始化
+dt = 0.1; % 时间步长
+A = [1 0 dt 0; 0 1 0 dt; 0 0 1 0; 0 0 0 1]; % 状态转移矩阵
+H = [1 0 0 0; 0 1 0 0]; % 观测矩阵
+Q = 0.1 * eye(4); % 过程噪声协方差
+R = 1 * eye(2); % 观测噪声协方差
+
+% 初始状态估计和协方差矩阵
+x = [0; 0; 0; 0]; % 初始状态估计
+P = eye(4); % 初始协方差矩阵
+
+% 模拟数据
+t = 0:dt:10;
+true_position = [2 * t; 2 * t]; % 真实位置，假设在半径为2的圆周上匀速运动
+measurements = true_position + sqrt(R) * randn(2, length(t)); % 加入观测噪声的测量值
+
+% 手动实现卡尔曼滤波
+filtered_position = zeros(2, length(t));
+for i = 1:length(t)
+    % 预测
+    x = A * x;
+    P = A * P * A' + Q;
+
+    % 更新
+    K = P * H' / (H * P * H' + R);
+    x = x + K * (measurements(:, i) - H * x);
+    P = (eye(4) - K * H) * P;
+
+    filtered_position(:, i) = x(1:2);
+end
+
+% 绘图
+figure;
+plot(true_position(1, :), true_position(2, :), 'b', measurements(1, :), measurements(2, :), 'rx', filtered_position(1, :), filtered_position(2, :), 'g');
+legend('真实位置', '测量值', '滤波估计');
+xlabel('x');
+ylabel('y');
+title('基于CV模型的二维坐标卡尔曼滤波');
+axis equal;
+
+
+
+function d=Dist(x1,x2)
+	if length(x2)==2
+		d=sqrt((x1(1)-x2(1))^2+(x1(3)-x2(2))^2);
+	else
+		d=sqrt((x1(1)-x2(1))^2+(x1(3)-x2(3))^2);
+	end
+end
+
 function cita=ffun(X1,X0)
 	if(X1(3,1)-X0(1,2)>=0)      %y1-y0>0
 		if(X1(1,1)-X0(1,1)>0)   %x1-x2>0 第一象限
@@ -91,13 +144,5 @@ function cita=ffun(X1,X0)
 		else                      %x1-x3<0 第三象限
 			cita=180+atand(abs((X1(3,1)-X0(1,2))/(X1(1,1)-X0(1,1))));
 		end
-	end
-end
-
-function d=Dist(x1,x2)
-	if length(x2)==2
-		d=sqrt((x1(1)-x2(1))^2+(x1(3)-x2(2))^2);
-	else
-		d=sqrt((x1(1)-x2(1))^2+(x1(3)-x2(3))^2);
 	end
 end

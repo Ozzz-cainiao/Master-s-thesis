@@ -9,8 +9,8 @@
 %       参考文件 SolTrack.cpp
 % 输入: 绝对时延，平台位置（三维的）, 解算类型
 %       solveType == 2 同步非线性解算，输入绝对时延，用两个浮标，两圆相交得到双解
-%       solveType == 3 。。，用三个浮标，两圆相交得到双解，第三个圆判解
-%       solveType == 4     异步解算，输入相对时延，用三个浮标，得到双解
+%       solveType == 3 同步非线性解算，用三个浮标，两圆相交得到双解，第三个圆判解
+%       solveType == 4      异步解算，输入相对时延，用三个浮标，得到双解
 %       node为三维坐标
 % 输出: 定位结果
 %**************************************************************************
@@ -82,8 +82,8 @@ elseif solveType == 4
     d = zeros(len, 1);
     r = zeros(len, 1);
     for i = 1:len
-        r(i) = sqrt(node(i, 1)^2+node(i, 2)^2+node(i, 3)^2); % d是平台到原点的距离的平方
-        d(i) = timeDelay(i) * c; % r是平台到目标距离的平方
+        r(i) = sqrt(node(i, 1)^2+node(i, 2)^2+node(i, 3)^2); % r是平台到原点的距离
+        d(i) = timeDelay(i) * c; % d是平台到目标距离
     end
     d21 = d(2) - d(1);
     d31 = d(3) - d(1);
@@ -104,7 +104,11 @@ elseif solveType == 4
     bb = 2 * (px * qx - px * node(1, 1) + py * qy - py * node(1, 2));
     cc = (node(1, 1) - qx)^2 + (node(1, 2) - qy)^2 + (node(1, 3) - zs)^2;
     v = bb^2 - 4 * aa * cc;
-    if v >= 0
+    if aa == 0
+        d1 = ccc / bb;
+        EstX = px * d1 + qx;
+        EstY = py * d1 + qy;
+    elseif aa ~= 0 && v >= 0
         % v > 0 但是d1 d2都小于0怎么办
         d1 = (-bb - sqrt(v)) / (2 * aa);
         d2 = (-bb + sqrt(v)) / (2 * aa);
@@ -119,20 +123,17 @@ elseif solveType == 4
             EstY(1) = py * d1 + qy;
             EstX(2) = px * d2 + qx;
             EstY(2) = py * d2 + qy;
-            %             % 这里需要冗余信息判解
-            %             % 利用第4个平台的时延信息
-            %             dis(1, 1) = pdist([node(4, :); [EstX(1, 1), EstY(1, 1), 0]]);
-            %             dis(1, 2) = pdist([node(4, :); [EstX(1, 2), EstY(1, 2), 0;]]);
-            % %             dis = pdist([node(4, :), [EstX(1), EstY(1), 0;EstX(2), EstY(2), 0;]]);
-            %             if dis(1) / c - timeDelay(4) < dis(2) / c - timeDelay(4)
-            %                 EstX = EstX(1);
-            %                 EstY = EstY(1);
-            %             else
-            %                 EstX = EstX(2);
-            %                 EstY = EstY(2);
-            %             end
-            EstX = EstX(1);
-            EstY = EstY(1);
+            % 这里需要冗余信息判解
+            % 利用第4个平台的时延信息
+            dis(1, 1) = pdist([node(4, :); [EstX(1, 1), EstY(1, 1), 0]]);
+            dis(1, 2) = pdist([node(4, :); [EstX(1, 2), EstY(1, 2), 0]]);
+            if dis(1) / c - timeDelay(4) < dis(2) / c - timeDelay(4)
+                EstX = EstX(1);
+                EstY = EstY(1);
+            else
+                EstX = EstX(2);
+                EstY = EstY(2);
+            end
         else
             EstX = nan;
             EstY = nan;

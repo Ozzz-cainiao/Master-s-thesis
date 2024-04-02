@@ -119,31 +119,7 @@ title('目标实际运动轨迹');
 % legend('target2', 'target5', 'Location', 'eastoutside');
 % title('目标实际运动轨迹');
 
-%% 假设对目标进行了区分
 
-% % 初始化一个新的cell数组，用于存储提取的结果
-% lfmCellArray = cell(1, 4);
-% reallfmCellArray = cell(1, 4);
-% fajksd = cell(1, 4);
-% % 循环遍历每个cell
-% for i = 1:numel(angR)
-%     % 提取指定行元素，然后存储到新的cell数组中
-%     lfmCellArray{i} = [angR{i}(2, :); angR{i}(5, :)];
-%     reallfmCellArray{i} = [realangR{i}(2, :); realangR{i}(5, :)];
-%     fajksd{i} = [realwuT{i}(2, :); realwuT{i}(5, :)];
-% end
-% 
-% angM = cell(length(t_obs), numOfPlatForm);
-% realangM = cell(length(t_obs), numOfPlatForm);
-% fasdhjkf = cell(length(t_obs), numOfPlatForm);
-% for iii = 1:length(t_obs)
-%     angM(iii, :) = arrayfun(@(s) lfmCellArray{s}(~isnan(sort(lfmCellArray{s}(:, t_obs(1) / T + iii - 1))), t_obs(1) / T + iii - 1), 1:numOfPlatForm, 'un', 0);
-%     %     angM(iii, :) = arrayfun(@(s) lfmCellArray{s}(~isnan(sort(lfmCellArray{s}(:, iii))), iii), 1:numOfPlatForm, 'un', 0); % 把这个观测平台全为nan的值删掉
-%     %     angMb(iii, :) = arrayfun(@(s) lfmCellArray{s}(~isnan((lfmCellArray{s}(:, iii))), iii), 1:numOfPlatForm, 'un', 0); % 把这个观测平台全为nan的值删掉
-%     %     realangM(iii, :) = arrayfun(@(s) reallfmCellArray{s}(~isnan(sort(reallfmCellArray{s}(:, iii))), iii), 1:numOfPlatForm, 'un', 0);
-%     realangM(iii, :) = arrayfun(@(s) reallfmCellArray{s}(~isnan(sort(reallfmCellArray{s}(:, t_obs(1) / T + iii - 1))), t_obs(1) / T + iii - 1), 1:numOfPlatForm, 'un', 0);
-%     fasdhjkf(iii, :) = arrayfun(@(s) fajksd{s}(~isnan(sort(fajksd{s}(:, t_obs(1) / T + iii - 1))), t_obs(1) / T + iii - 1), 1:numOfPlatForm, 'un', 0);
-% end
 
 %% 先把正确的解算结果计算一下 但是也要加时空关联
 % AOATime(realangM, node, 2, t_obs, T);

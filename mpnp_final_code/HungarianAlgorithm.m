@@ -144,6 +144,5 @@ for j = 1:length(idx1)
     cost = cost + C(idx1(j),idx2(j));
 end
 
-
 end
 

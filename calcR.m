@@ -1,7 +1,5 @@
 %% 使用分治贪心关联获取线序号 然后获取时延关系解算
-% 需要传入时延和方位信息
-
-%% 传入参数：角度，平台数目，平台位置，目标数 当前时刻  观测周期
+% 传入参数：角度，平台数目，平台位置，目标数 当前时刻  观测周期
 % arrR 5000*3 cell 时间 目标 平台数
 function [outTimeM, choose] = calcR(sourceAll, timeR, arrR, pNum, node, num, t_obs, T)
 
@@ -33,23 +31,19 @@ for iii = 1:length(t_obs)
         % todo 两目标两平台怎么做
         if all(ns ~= 1) % 无解只剩下两个平台有测量，不能进行关联，只能对一个目标进行处理
             [outLocX, outLocY] = deal(nan);
-
         else % 只有一个测量，直接进行定位
             Z = cell2mat(angM1(locs_notnan));
             [outLocX, outLocY] = LSM(Z, node);
         end
     else
         % 每个平台的测向线个数
-        %                 ns = arrayfun(@(x) size(angM1{x}(~isnan(angM1{x})), 1), 1:pNum);
         if all(ns == 1)
             %             disp("all(ns == 1)")
-            %             Z = arrayfun(@(x) angM1{x}(~isnan(angM1{x})), 1:pNum, 'un');
             Z = cell2mat(angM1);
-            %             Z = arrayfun(@(x) angM1{x}(~isnan(angM1{x})), 1:pNum, 'un');
             [outLocX, outLocY] = LSM(Z, node);
         else
             % Zt是1*numOfPlatform的cell数组，每个cell中是它的测向线
-            fprintf("ns= %d\n", ns);
+%             fprintf("ns= %d\n", ns);
             if all(ns == 0)
                 continue;
             end
@@ -86,7 +80,6 @@ for iii = 1:length(t_obs)
         end
     end
 
-
     di(isnan(di)) = 1e8;
     % 匈牙利算法，二分图匹配
     if size(di, 1) > size(di, 2) % HungarianAlgorithm.m只能对列数≥行数的正确关联
@@ -95,8 +88,6 @@ for iii = 1:length(t_obs)
     else
         [~, zeta] = HungarianAlgorithm(di);
     end
-
-    %
     EstX = outLocX.' * zeta;
     EstY = outLocY.' * zeta;
     EstLocs = outLocs.' * zeta;
@@ -104,6 +95,8 @@ for iii = 1:length(t_obs)
     EstY(EstY == 0) = nan;
     EstLocs(:, all(EstLocs == 0, 1)) = nan;
     EstLocs = EstLocs.';
+
+    % 提取出各目标对应的信息
     if length(EstX) == 1
         outLoctionCAX(1, iii) = EstX(1)';
         outLoctionCAY(1, iii) = EstY(1)';
@@ -122,7 +115,7 @@ for iii = 1:length(t_obs)
                 for s = 1:pNum
                     if EstLocs(i, s) ~= 0
                         outAngM{i ,iii}(s) = angM1{s}(EstLocs(i, s)); % 提取出的定位角度组合
-                        outTimeM{i ,iii}(s) = timeM1{s}(EstLocs(i, s)); %
+                        outTimeM{i ,iii}(s) = timeM1{s}(EstLocs(i, s)); % 如果关联对的话，那么就都是来自同一个目标的
                     else
                         outAngM{i ,iii}(s) = nan;
                         outTimeM{i ,iii}(s) = nan; %
@@ -162,8 +155,8 @@ for iii = 1:length(t_obs)
                 % 这里的问题是为什么选定平台1 它不是最早有数据的 会导致有帧号找不到
 %                 t_ed = round(t_e-t_e(1), 1); % 时延差 四舍五入到小数点后最近的1位数
 
-                 t_min = min(t_e);
-                 t_ed = round(t_e - t_min, 1); % 时延差 四舍五入到小数点后最近的1位数
+                t_min = min(t_e);
+                t_ed = round(t_e - t_min, 1); % 时延差 四舍五入到小数点后最近的1位数
                 loc_ed = iii + floor(t_ed/T); % 位置 这是绝对的帧号，不是相对的
                 % 参考王静飞论文  选取位置到平台最远的那个作为基准
                 %                 t_max = max(t_e);
@@ -215,27 +208,6 @@ for iii = 1:length(t_obs)
     end
 end
 
-%% 根据新定出来的位置，去计算到各个节点之间的时延差，然后重新解算位置
-for iii = 1:length(t_obs)
-    for i = 1:num
-        if isnan(outLoctionSPCX(i, iii))
-            disp("这个结果为nan");
-
-        else
-            midOldCAX = outLoctionSPCX(i, iii);
-            midOldCAY = outLoctionSPCY(i, iii);
-            % 计算到各平台之间的距离
-            x_e = midOldCAX - node(:, 1); % 估计位置与观测站横轴距离
-            y_e = midOldCAY - node(:, 2); % 估计位置与观测站纵轴距离
-            r_e = sqrt(x_e.^2+y_e.^2); % 估计位置与观测站之间的距离
-            t_e = r_e / c;
-            t_ed = round(t_e-t_e(1), 1); % 时延差 四舍五入到小数点后最近的1位数
-            loc_ed = iii + floor(t_ed/T); % 位置 这是绝对的帧号，不是相对的
-            %             fprintf("当前帧号为：%d， 目标号为：%d,  找到的时延为： %d %d %d %d\n", iii, i, loc_ed);
-        end
-    end
-end
-
 %% 加上时延数据时空关联  先在所有数据都能接收到的基础上进行 即第7秒，所有平台都接收到了目标的信息
 % loc中的时延信息，是相对可靠的，基本只有0-3帧的误差，同时测得的绝对时延变化不大。
 % 下面实现根据方位关联的反馈信息实现时延定位
@@ -246,6 +218,7 @@ end
 TA_res = cell(length(t_obs), num);
 [TDOA_resX, TDOA_resY] = deal(nan(length(t_obs), num));
 TDOA_res = cell(length(t_obs), num);
+mean_res = cell(length(t_obs), num);
 % 一维时间
 for iii = 1:length(t_obs)
     % 二维目标
@@ -257,7 +230,6 @@ for iii = 1:length(t_obs)
         end
         frame(frame <= 1) = 1;
         frame(frame >= length(t_obs)) = length(t_obs);
-
         c_angle = nan(size(frame));
         c_time = nan(size(frame));
 
@@ -266,10 +238,11 @@ for iii = 1:length(t_obs)
             if ~isempty(outAngM{i, frame(j)})
                 c_angle(j) = outAngM{i, frame(j)}(j);
                 c_time(j) = outTimeM{i, frame(j)}(j);
-
-
             end
         end
+        % 如果方位关联错了，则导致时延不对，然后这两个算法结果就不对
+        % 这里可以抗异常
+
         % 使用TA进行计算?
         [res, ~] = TA1(c_time, c_angle, node);
         TA_res{iii, i} = res;
@@ -282,17 +255,73 @@ for iii = 1:length(t_obs)
         TDOA_res{iii, i} = res;
         TDOA_resX(iii, i) = res(1);
         TDOA_resY(iii, i) = res(2);
+        if i == 1
+            ini_pos(iii, 1) = res(1);
+            ini_pos(iii, 2) = res(2);
+        end
 
-        % 使用纯方位计算的位置
-        fprintf("  使用TA计算的结果为：%f, %f\n", res);
-        fprintf(" 使用AOA计算的结果为：%f, %f \n", [outLoctionSPCX(i, iii), outLoctionSPCY(i, iii)]);
-        fprintf("使用TDOA计算的结果为：%f, %f \n", [TDOA_resX(iii, i), TDOA_resY(iii, i)]);
-        %         fprintf("这两个点之间的距离为： %f\n", pdist([res; [outLoctionSPCX(i, iii), outLoctionSPCY(i, iii)]]));
-
-
+        clear res;
+        res = cell(3, 1);
+        locc = cell(3, 1);
+        % 计算TDOA/AOA
+        [res{1}, locc{1, :}] = TA(c_time', c_angle', nodeT);
+    
+        % 计算TDOA
+        if size(node, 1) > 3
+            [res{2}, locc{2, :}] = myTDOA(c_time, nodeT);
+        else
+            [res{2}, locc{2, :}] = TDOA(c_time, nodeT, 4);
+        end
+    
+        % 计算AOA
+        [res{3}, locc{3, :}] = AOA(c_angle, nodeT);
+    
+        % 将结果综合起来
+        Res = res{1}; % 5
+        Res = [Res; res{2}]; % 4
+        Res = [Res; res{3}]; % 6
+        rowsToRemove = any(isnan(Res), 2) | any(isinf(Res), 2); % 找到包含nan或inf的行号
+        Res = Res(~rowsToRemove, :); % 去除包含nan或inf的行
+        
+        Loc = locc{1}; % 5
+        Loc = [Loc; locc{2}]; % 4
+        Loc = [Loc; locc{3}]; % 6
+        Loc = Loc(~rowsToRemove, :);
+        
+        %% 计算聚集度
+        rho = 200;
+        gamma = 0.005;
+        [respie] = jujidu(Res, Loc, rho, gamma); % 正常参量的平均值
+        % disp("Finish")
+        if size(respie, 1) > 1
+            res = mean(respie);
+        else
+            res = respie;
+        end
+        mean_res{iii, i} = res;
+        mean_resX(iii, i) = res(1);
+        mean_resY(iii, i) = res(2);
+        %% 找到异常的参量
+        indicesInRes = find(ismember(Res, respie)); % 使用 find 查找子集元素在父数组中的索引
+        halfIndex = numel(indicesInRes) / 2;
+        firstHalfIndices = indicesInRes(1:halfIndex); % 找到保留的行号
+        locpie = Loc(firstHalfIndices, :);
+        
+        % 先将这些cell拼接
+        LLoc = unique(horzcat(Loc{:}));
+        llocpie = unique(horzcat(locpie{:}));
+        
+        % 使用 setdiff 找到在 Res 中但不在 respie 中的元素
+        nonSubsetElementsInRes = setdiff(LLoc, llocpie);
+        if ~isempty(nonSubsetElementsInRes)   
+            disp(['当前目标号', num2str(i), '，帧号', num2str(iii), '，异常参量是: ', nonSubsetElementsInRes]);
+        end
     end
 end
+save('ini_pos.mat','ini_pos')
+% load ini_pos.mat
 
+% filtered_position = my_kalman(ini_pos);
 %% 计算定位误差
 % 1. 提取位置
 for i = 1:num
@@ -303,10 +332,16 @@ end
 % 计算误差
 for i = 1:num
     if i == 1
-        k = 40;
+        k = 40; % 这个要根据到达当前平台的时刻确定
     else
         k = 46;
     end
+% 仿真2的参数
+%     if i == 1
+%         k = 40; % 这个要根据到达当前平台的时刻确定
+%     else
+%         k = 46;
+%     end
     for iii = 1 : size(TDOA_res, 1)
         A = sourceAll(i).Position(k + iii, :);
         B = cell2mat(TDOA_res(iii, i));
@@ -328,63 +363,41 @@ for i = 1:num
         else
             TA_distances{i}(iii, 1) = nan;
         end
+
+        B = cell2mat(mean_res(iii, i));
+        if ~isempty(B)
+            mean_distances{i}(iii, 1) = sqrt(sum((~isempty(A) & ~isempty(B)).*(A-B).^2, 2));
+        else
+            mean_distances{i}(iii, 1) = nan;
+        end
     end
-%     A = cell2mat(TDOA_res(:, i)); 
-%     TDOA_shortest_distances{i}= calculate_shortest_distances(A, B);
-%     TDOA_distances{i} = calculate_corresponding_distances(A, B);
-% 
-%     A = [outLoctionSPCX(i, :)', outLoctionSPCY(i, :)'];
-%     AOA_shortest_distances{i} = calculate_shortest_distances(A, B);
-%     AOA_distances{i} = calculate_corresponding_distances(A, B);
-% 
-%     A = cell2mat(TA_res(:, i));
-%     TA_shortest_distances{i} = calculate_shortest_distances(A, B);
-%     TA_distances{i} = calculate_corresponding_distances(A, B);
 end
-% fig1 = figure('Units', 'centimeters', 'Position', [10, 10, 20, 11.24 / 15 * 15]);
-% figure(fig1)
-% hold on
-%
-% axis([0, 10e3, 0, 10e3])
-% title("分治贪心关联")
-% for ii = 1:num
-%     plot(outLoctionCAX(ii, :), outLoctionCAY(ii, :), '.');
-% end
-% scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100);
-% legend('目标1', '目标2', '观测站', 'Location', 'eastoutside', 'FontSize', 12)
-% % legend('目标1', '目标2', '目标3', '观测站', 'Location', 'eastoutside', 'FontSize', 12)
-% hold off
-% set(gca, 'Box', 'on')
-% xlabel('东向坐标/m', 'FontSize', 12)
-% ylabel('北向坐标/m', 'FontSize', 12)
 
 %% 画图
 % fig2 = figure('Units', 'centimeters', 'Position', [10, 10, 20, 11.24 / 15 * 15]);
-fig2 = figure;
-figure(fig2)
+figure('Units', 'centimeters', 'Position', [10, 10, 12, 12 / 4 * 3]); % 左下宽高
 hold on
 for ii = 1:num
     plot(outLoctionSPCX(ii, :), outLoctionSPCY(ii, :), '.')
 end
 axis([0, 10e3, 0, 10e3])
-title("分治贪心关联+时空关联")
+title("分治贪心关联AOA定位", 'FontSize', 10)
 scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100);
-legend('目标1', '目标2', '观测站', 'FontSize', 12)
+legend('目标1', '目标2', '观测站', 'FontSize', 10)
 % legend('目标1', '目标2', '目标3', '观测站', 'Location', 'eastoutside', 'FontSize', 12)
 hold off
 set(gca, 'Box', 'on')
-xlabel('东向坐标/m', 'FontSize', 12)
-ylabel('北向坐标/m', 'FontSize', 12)
+xlabel('东向坐标/m', 'FontSize', 10)
+ylabel('北向坐标/m', 'FontSize', 10)
 
 
-fig3 = figure;
-figure(fig3)
+figure('Units', 'centimeters', 'Position', [10, 10, 12, 12 / 4 * 3]); % 左下宽高
 hold on
 for ii = 1:num
     plot(TA_resX(:, ii), TA_resY(:, ii), '.')
 end
 axis([0, 10e3, 0, 10e3])
-title("时延差/方位联合定位")
+title("分治贪心关联TDOA/AOA定位", 'FontSize', 10)
 scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100);
 legend('目标1', '目标2', '观测站', 'FontSize', 12)
 % legend('目标1', '目标2', '目标3', '观测站', 'Location', 'eastoutside', 'FontSize', 12)
@@ -394,31 +407,65 @@ xlabel('东向坐标/m', 'FontSize', 12)
 ylabel('北向坐标/m', 'FontSize', 12)
 
 
-fig4 = figure;
-figure(fig4)
+figure('Units', 'centimeters', 'Position', [10, 10, 12, 12 / 4 * 3]); % 左下宽高
 hold on
 for ii = 1:num
     plot(TDOA_resX(:, ii), TDOA_resY(:, ii), '.')
 end
 axis([0, 10e3, 0, 10e3])
-title("TDOA算法")
+title("分治贪心关联TDOA定位", 'FontSize', 10)
 scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100);
-legend('目标1', '目标2', '观测站', 'FontSize', 12)
+legend('目标1', '目标2', '观测站', 'FontSize', 10)
 % legend('目标1', '目标2', '目标3', '观测站', 'Location', 'eastoutside', 'FontSize', 12)
 hold off
 set(gca, 'Box', 'on')
-xlabel('东向坐标/m', 'FontSize', 12)
-ylabel('北向坐标/m', 'FontSize', 12)
+xlabel('东向坐标/m', 'FontSize', 10)
+ylabel('北向坐标/m', 'FontSize', 10)
 
+
+figure('Units', 'centimeters', 'Position', [10, 10, 12, 12 / 4 * 3]); % 左下宽高
+hold on
+for ii = 1:num
+    plot(mean_resX(:, ii), mean_resY(:, ii), '.')
+end
+axis([0, 10e3, 0, 10e3])
+title("分治贪心关联抗异常参量定位", 'FontSize', 10)
+scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100);
+legend('目标1', '目标2', '观测站', 'FontSize', 10)
+% legend('目标1', '目标2', '目标3', '观测站', 'Location', 'eastoutside', 'FontSize', 12)
+hold off
+set(gca, 'Box', 'on')
+xlabel('东向坐标/m', 'FontSize', 10)
+ylabel('北向坐标/m', 'FontSize', 10)
+
+% %% 画出误差分布图
+% for i = 1 : num
+%     figure('Units', 'centimeters', 'Position', [10, 10, 12, 12 / 4 * 3]); % 左下宽高
+%     hold on;
+%     plot(AOA_distances{i}, '-+');
+%     plot(TDOA_distances{i}, '-o');
+%     plot(TA_distances{i}, '-*');
+%     plot(mean_distances{i}, '-');
+%     legend('AOA', 'TDOA', 'TDOA/AOA', 'FontSize', 10)
+%     title(['目标',num2str(i),'三种方法定位误差对比'], 'FontSize', 10)
+%     ylabel('定位误差/m', 'FontSize', 10)
+%     xlabel('点数', 'FontSize', 10)
+%     set(gca, 'Box', 'on')
+%     hold off;
+% end
 %% 画出误差分布图
 for i = 1 : num
-    fig5 = figure;
-    figure(fig5)
+    figure('Units', 'centimeters', 'Position', [10, 10, 12, 12 / 4 * 3]); % 左下宽高
     hold on;
-    plot(TDOA_distances{i}, '-.');
-    plot(TA_distances{i}, '-.');
-    plot(AOA_distances{i}, '-.');
-    legend('TDOA', 'TDOA/AOA', 'AOA', 'FontSize', 12)
+    plot(AOA_distances{i}, '-+');
+    plot(TDOA_distances{i}, '-o');
+    plot(TA_distances{i}, '-*');
+    plot(mean_distances{i}, '-x');
+    legend('AOA', 'TDOA', 'TDOA/AOA', '抗异常参量后结果','FontSize', 10)
+    title(['目标',num2str(i),'4种方法定位误差对比'], 'FontSize', 10)
+    ylabel('定位误差/m', 'FontSize', 10)
+    xlabel('点数', 'FontSize', 10)
+    set(gca, 'Box', 'on')
     hold off;
 end
 %% 计算平均误差
@@ -426,7 +473,10 @@ for i = 1 : num
     fprintf("目标%d TDOA_distances的平均值为%f\n", i, nanmean(TDOA_distances{i}));
     fprintf("目标%d   TA_distances的平均值为%f\n", i, nanmean(TA_distances{i}));
     fprintf("目标%d  AOA_distances的平均值为%f\n", i, nanmean(AOA_distances{i}));
+    fprintf("目标%d  mean_distances的平均值为%f\n", i, nanmean(mean_distances{i}));
 end
+% 不考虑TDOA算法，则仅考虑TA算法和AOA算法，结合使用，如何结合？
+% 距离上一帧的最近邻与抗异常参量
 end
 
 %% ==========================子函数===============================
@@ -978,18 +1028,45 @@ end
 
 end
 
-%%
-function shortest_distances = calculate_shortest_distances(matrix_A, matrix_B)
-% 计算矩阵A中每个坐标与矩阵B中所有坐标的距离
-distances = sqrt(sum((permute(matrix_A, [1, 3, 2]) - permute(matrix_B, [3, 1, 2])).^2, 3));
+%% kalman 对最后的定位结果进行滤波
+function filtered_position = my_kalman(ini_pos)
+% % 执行最近邻插值
+% ini_pos = fillmissing(ini_pos, 'movmedian',20);
+% x = ini_pos(1, 1);
+% y = ini_pos(1, 2);
+% initialState = [x;0;y;0];
+% KF = trackingKF('MotionModel','2D Constant Velocity','State',initialState);
+% T  = 0.1;
+% 
+% for k = 1:size(ini_pos,1)
+%     pstates(k,:) = predict(KF,T);
+%     cstates(k,:) = correct(KF,ini_pos(k,:));
+% end
+% plot(ini_pos(:,1),ini_pos(:,2),"k.",pstates(:,1),pstates(:,3),"+", ...
+%     cstates(:,1),cstates(:,3),"o")
+% xlabel("x [m]")
+% ylabel("y [m]")
+% grid
+% xt  = [x-2, ini_pos(1,1)+0.1, ini_pos(end,1)+0.1];
+% yt = [y, ini_pos(1,2), ini_pos(end,2)];
+% text(xt,yt,["First measurement","First position","Last position"])
+% legend("Object position","Predicted position","Corrected position")
 
-% 取每行中的最小距离作为最短距离
-shortest_distances = min(distances, [], 2);
+
 end
-function distances = calculate_corresponding_distances(matrix_A, matrix_B)
-    % 确保矩阵A和B具有相同的大小
-    assert(isequal(size(matrix_A), size(matrix_B)), '矩阵A和B的大小必须相同');
-    
-    % 计算对应索引之间的距离
-    distances = sqrt(sum((matrix_A - matrix_B).^2, 2));
+%% 实现TDOA算法 这个程序专用 在内部集成了4平台选3的功能
+function [res, loc] = myTDOA(currentT, node)
+% 开始4选3
+if size(node, 1) > 3
+    combinationsT = nchoosek(currentT, 3);
+    % 使用nchoosek函数生成所有可能的组合的索引
+    combinationIndices = nchoosek(1:size(node, 1), 3);
+    for index = 1:size(combinationsT, 1)
+        timeDelay = combinationsT(index, :);
+        nodeT = node(combinationIndices(index, :), :);
+        [res(index, :), ~]= TDOA(timeDelay, nodeT, 4);
+        % 自我获取组合
+        loc{index, :} = arrayfun(@(x)"t"+num2str(x), combinationIndices(index, :));
+    end
+end
 end

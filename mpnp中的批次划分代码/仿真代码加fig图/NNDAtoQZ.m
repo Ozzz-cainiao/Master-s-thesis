@@ -176,7 +176,9 @@ for i=1:simTime
             P_Preforward = cat(3,P_Preforward,NaN);
         end
     end
-[Z_NNDA,Z_kalman,RealNum,v_update,X_Pre,P_Pre,bisconvergence,bisend,endZk] = myNNDAQZ(Zk(:,i),targetnum,L,Lth,disth,T,Z_NNDAforward, Z_kalmanforward,forwardNum,RealNumforward,v_last,X_Preforward,P_Preforward,bisendforward,endZkforward);
+[Z_NNDA,Z_kalman,RealNum,v_update,X_Pre,P_Pre,bisconvergence,bisend,endZk] ...
+    = myNNDAQZ(Zk(:,i),targetnum,L,Lth,disth,T,Z_NNDAforward, Z_kalmanforward, ...
+    forwardNum,RealNumforward,v_last,X_Preforward,P_Preforward,bisendforward,endZkforward);
 Z_NNDAforward=Z_NNDA;
 Z_kalmanforward=Z_kalman;
 forwardNum=i;

@@ -74,15 +74,4 @@ end
 % 将隶属度加权
 res = 0.2 * b_num_lines_membership + 0.8 * b_freq_membership;
 end
-% function res = nearest_value(x, array)
-%     min_diff = inf;
-%     nearest_val = [];
-%     for i = 1:numel(array)
-%         diff = norm(array{i} - x);
-%         if diff < min_diff
-%             min_diff = diff;
-%             nearest_val = array{i};
-%         end
-%     end
-%     res = nearest_val;
-% end
+
