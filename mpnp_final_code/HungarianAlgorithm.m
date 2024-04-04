@@ -78,8 +78,12 @@ while flag(5) == 0
             tempC = C1 + m1 + m2;
             minValue = min(min(tempC));
             [smallestIdx1, smallestIdx2] = find(tempC == minValue);
-            smallestIdx1 = smallestIdx1(1);
-            smallestIdx2 = smallestIdx2(1);
+            if ~isempty(smallestIdx1)
+                smallestIdx1 = smallestIdx1(1);
+            end
+            if ~isempty(smallestIdx2)
+                smallestIdx2 = smallestIdx2(1);
+            end
             % Go to Step 6:
             flag = zeros(1,5);
             flag(4) = 1;

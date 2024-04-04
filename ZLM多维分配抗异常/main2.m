@@ -1,11 +1,11 @@
 %**************************************************************************
-% 文件名: E:\坚果云同步文件夹\毕设——非合作多目标定位\FinalCode\ZLM多维分配抗异常\main.m
+% 文件名: E:\坚果云同步文件夹\毕设——非合作多目标定位\FinalCode\ZLM多维分配抗异常\main2.m
 % 版本: v1.0
 % 作者: ZLM
 % 联系方式: Liminzhang7@outlook.com
 % 日期: 2024-04-02
-% 描述: ZLM多维分配抗异常参量（抗虚警）程序1
-%       主要实现在目标数不变的情况下，改变虚警率，检测算法的性能
+% 描述: ZLM多维分配抗异常参量（抗虚警）程序2
+%       主要实现在虚警率不变的情况下，改变目标个数，检测算法的性能
 % 输入:  
 % 输出:  
 %**************************************************************************
@@ -18,16 +18,19 @@ num = 1000; % 蒙特卡罗次数
 res = zeros(num, 1); % 计算正确率
 record = cell(num, 1);
 sample = cell(num, 1);
-all_lambda = [0, 0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 1];
-num_same_cells = size(all_lambda);
+
+choseNum = {[1, 4];
+            [1, 3, 4];
+            [1, 2, 3, 4];
+            [1, 2, 3, 4, 5];
+            [1, 2, 3, 4, 5, 6]};
 tic;
-iii = 0;
-for lambda = all_lambda
-    iii = iii + 1;
+iii = 1;
+while iii <= size(choseNum, 1)
     parfor count = 1:num
-%     for count = 1:num
         % 虚警服从均值泊松分布,虚警特征实际角度根据叠加产生，
         % lambda = 0.1;  % 泊松分布的参数（虚警率）
+        lambda = 0.15;
         num_false_alarms = poissrnd(lambda);
         % 生成均匀分布的虚警信号值
         if num_false_alarms > 0
@@ -35,8 +38,8 @@ for lambda = all_lambda
         else
             false_alarm_values = [];
         end
-        disp(['生成的虚警信号数量为：', num2str(num_false_alarms), ...
-        ' 生成的虚警信号值为：', num2str(false_alarm_values)]);
+        % disp(['生成的虚警信号数量为：', num2str(num_false_alarms), ...
+        % ' 生成的虚警信号值为：', num2str(false_alarm_values)]);
 
         %% ==========================参数===============================
         times = 5;
@@ -53,10 +56,9 @@ for lambda = all_lambda
 
         %% ==========================布放===============================
         node = [0, 0; 4, 0; 4, 4; 0, 4] .* 1e3; % 节点位置
-        source = [0.5, 2.05; 0.1, 2; 2, 0.5; 3.5, 2; 2.3, 2; 2, 3.5] .* 1e3;
-
         S = size(node, 1); % 节点数
-        choNum = [1, 3, 4];
+        source = [0.5, 2.05; 0.1, 2; 2, 0.5; 3.5, 2; 2.3, 2; 2, 3.5] .* 1e3;
+        choNum = cell2mat(choseNum(iii));
         choSource = source(choNum, :); % 选择的三个目标
         N = size(choSource, 1);
         % atan2d [-180,180]
@@ -155,16 +157,16 @@ for lambda = all_lambda
     end
     num_same_cells(iii) = sum(cellfun(@isequal, record, sample), 'all');
     toc;
+    iii = iii + 1;
 end
 
 %% 画图 虚警检出率与虚警率的关系
 figure('Units', 'centimeters', 'Position', [10, 10, 12, 12 / 4 * 3]); % 左下宽高
-plot(all_lambda, num_same_cells./1000, 'b--o');
-title('虚警检出率与虚警率的关系');
-xlabel('虚警率', 'FontSize', 12)
+plot(cellfun(@numel, choseNum), num_same_cells./1000, 'b--o');
+title('虚警检出率与目标个数的关系');
+xlabel('目标个数' ,'FontSize', 12);
 ylabel('虚警检出率', 'FontSize', 12)
-xticks(0:0.1:1); % 设置 x 轴刻度步长
-yticks(0:0.1:1); % 设置 y 轴刻度步长
+ylim([0,1])
 % %% 画出真实目标分布
 % figure('Units', 'centimeters', 'Position', [10, 10, 12, 12 / 4 * 3]); % 左下宽高
 % for i = 1 : length(choNum)
@@ -177,8 +179,10 @@ yticks(0:0.1:1); % 设置 y 轴刻度步长
 % set(gca, 'Box', 'on')
 % xlabel('东向坐标/m', 'FontSize', 12)
 % ylabel('北向坐标/m', 'FontSize', 12)
-
-%% 画出所有平台的测向线，包括虚警和漏报
+%
+% %% 画出所有平台的测向线，包括虚警和漏报
+% % Ylim  = [-3e3, 3e3];
+% % xgrid = -3e3:10:3e3;
 % xgrid = -1e3:10:5e3;
 % Ylim  = [-1e3, 5e3];
 % y = cell(size(node, 1), 1);
