@@ -48,7 +48,7 @@ for i = 1:mpie
 end
 
 % figure('Units', 'centimeters', 'Position', [15, 5, 20, 11.24 / 15 * 15]);
-figure
+figure('Units', 'centimeters', 'Position', [10, 10, 12, 12 / 4 * 3]); % 左下宽高
 h = plot(w_mpie, 'bo-'); % 返回图的句柄
 % 在指定索引上更改数据点形状
 for i = 1:length(idx)

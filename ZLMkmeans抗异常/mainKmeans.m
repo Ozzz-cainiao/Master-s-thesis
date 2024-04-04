@@ -22,7 +22,7 @@ T_num = T_all / T; %观测次数
 dt = T; % 观测周期
 % var2d = 1.5^2; % 角度制  角度误差
 var2d = 0.2^2; % 角度制  角度误差
-var2t = 2e-4^2;
+var2t = 2e-3^2;
 %% 创建平台
 platform1 = Platform([0, 0]);
 platform2 = Platform([2e3, 0]);
@@ -103,23 +103,15 @@ for j = 1:numOfPlatForm % 遍历平台
 
 end % for j = 1:numOfPlatForm
 
-%% 画出目标运动的实际轨迹
-figure
-hold on
-for i = 1:numOfSource
-    plot(sourceAll(i).Position(:, 1), sourceAll(i).Position(:, 2), '.');
-end
-scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100);
-legend('target1', '观测平台');
-title('目标实际运动轨迹');
-% for i = 1: [2, 5]
+% %% 画出目标运动的实际轨迹
+% figure('Units', 'centimeters', 'Position', [10, 10, 12, 12 / 4 * 3]); % 左下宽高
+% hold on
+% for i = 1:numOfSource
 %     plot(sourceAll(i).Position(:, 1), sourceAll(i).Position(:, 2), '.');
 % end
 % scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100);
-% legend('target2', 'target5', 'Location', 'eastoutside');
+% legend('target1', '观测平台');
 % title('目标实际运动轨迹');
-
-
 
 %% 先把正确的解算结果计算一下 但是也要加时空关联
 % AOATime(realangM, node, 2, t_obs, T);

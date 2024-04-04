@@ -35,7 +35,6 @@ for i = 1:numOfSource
     end
 end
 
-
 % %% 画图
 % figure('Units', 'centimeters', 'Position', [15, 5, 20, 11.24 / 15 * 15]);
 % hold on
@@ -120,7 +119,7 @@ zhichidu(Res, firstHalfIndices);
 
 %% 画图
 % figure('Units', 'centimeters', 'Position', [15, 5, 20, 11.24 / 15 * 15]);
-figure
+figure('Units', 'centimeters', 'Position', [10, 10, 12, 12 / 4 * 3]); % 左下宽高
 hold on
 plot(Res(:, 1), Res(:, 2), 'b*')
 plot(respie(:, 1), respie(:, 2), 'r*');
@@ -133,32 +132,6 @@ title("目标位置初测值（全局）")
 
 end
 
-%% 实现TDOA/AOA算法  参考公式 王静飞论文
-% 输入参数 1个目标的时延和方位矩阵
-% 输出参数 当前目标的时间定位结果
-function [Res] = myTA(tMatrix, aMatrix, node)
-time = size(tMatrix, 1);
-% 使用 isnan 函数生成逻辑矩阵，其中非NaN元素为true，NaN元素为false
-nanLogicalMatrix = ~isnan(tMatrix);
-
-% 使用 sum 函数按行求和，得到每行非NaN元素的数量
-nonNaNCountPerRow = sum(nanLogicalMatrix, 2);
-Res = nan(time, 2);
-for t = 1:time
-    if nonNaNCountPerRow(t) >= 2
-        % 可以进行计算了，寻找对应平台的索引
-        % 获取该行中非NaN元素的索引
-        nonNaNIndices = find(~isnan(tMatrix(t, :)));
-        % 提取出对应的平台时延和角度
-        currentT = tMatrix(t, nonNaNIndices);
-        currentA = aMatrix(t, nonNaNIndices);
-        nodeT = node(nonNaNIndices, :);
-
-        [res, loc] = TA(currentT, currentA, nodeT);
-        [Res(t, 1), Res(t, 2)] = jujidu(res, loc, 100);
-    end
-end
-end
 
 %% 实现TDOA算法 这个程序专用 在内部集成了4平台选3的功能
 function [res, loc] = myTDOA(currentT, node)
