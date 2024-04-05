@@ -74,6 +74,9 @@ for i = 1:size(currentA, 2)
             res(m, :) = [xs, ys];
             loc{m, :}= ["t"+ num2str(i), "t"+ num2str(j), "theta"+ num2str(x)];
         else
+            m = m + 1;
+            res(m, :) = [nan, nan];
+            loc{m, :}= [];
         end
     end
 end

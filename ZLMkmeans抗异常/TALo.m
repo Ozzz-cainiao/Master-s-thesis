@@ -128,7 +128,6 @@ scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 10
 legend("C2", "C1", "C1中心", "观测平台");
 hold off
 title("目标位置初测值（全局）")
-% figure('Units', 'centimeters', 'Position', [15, 5, 20, 11.24 / 15 * 15]);
 
 end
 
