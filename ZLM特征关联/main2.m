@@ -1,11 +1,10 @@
 %**************************************************************************
-% 文件名: E:\坚果云同步文件夹\毕设——非合作多目标定位\FinalCode\ZLM特征关联\main.m
+% 文件名: E:\坚果云同步文件夹\毕设——非合作多目标定位\FinalCode\ZLM特征关联\main2.m
 % 版本: v1.0
 % 作者: ZLM
 % 联系方式: Liminzhang7@outlook.com
-% 日期: 2024-03-12
-% 描述: 新特征关联主程序，在这个程序内部实现模糊数学关联,
-%      使用蒙特卡罗统计
+% 日期: 2024-04-06
+% 描述: 实现与层次聚类算法的性能对比
 % 输入:
 % 输出:
 %**************************************************************************
@@ -13,7 +12,8 @@
 clc;
 clear;
 close all;
-numOfM = 1; % 控制蒙特卡洛的次数
+numOfM = 1000; % 控制蒙特卡洛的次数
+
 %% 观测数据
 T = 0.1; %观测周期
 T_all = 0.1; %观测时间
@@ -21,8 +21,9 @@ T_num = T_all / T; %观测次数
 dt = T; % 观测周期
 % var2d = 1.5^2; % 角度制  角度误差
 var2d = 0.2^2; % 角度制  角度误差
-Pd = 0.9; % 检测概率
+% Pd = 0.9; % 检测概率
 lambda = 0.1; % 假设虚警率为 0.1
+
 %% 布放平台
 platform1 = Platform([0, 0]);
 platform2 = Platform([1e4, 0]);
@@ -55,7 +56,7 @@ source1 = SoundSource('CW', feature1, 100, initial_position1, velocity1, F1, F2,
 initial_position2 = [7e3, 2e3]; % 初始位置目标2
 velocity2 = [0, 0]; % 运动速度
 acc2 = 0; % 加速度
-feature2 = {8, {225,380, 420, 460, 550, 620, 710, 820}, 4.7, 3, 5}; % 线谱数量，线谱频率, 轴频，桨叶数、谐波个数
+feature2 = {8, {225, 380, 420, 460, 550, 620, 710, 820}, 4.7, 3, 5}; % 线谱数量，线谱频率, 轴频，桨叶数、谐波个数
 source2 = SoundSource('CW', feature2, 100, initial_position2, velocity2, F1, F2, acc2);
 
 initial_position3 = [2e3, 5e3]; % 初始位置目标2
@@ -78,67 +79,82 @@ realwuT = cell(1, numOfPlatForm); % 存放无时延的真实的角度
 % feature_matrix = cell(1, T_num);
 feature_matrix = cell(numOfPlatForm, numOfSource);
 tic;
-%% 获取每个平台的每个目标信息
-count1 = 0;
-count2 = 0;
 
-% parfor i = 1:numOfM
-for i = 1 : numOfM
-    T_R = []; % 真实新类编号
-    T1 = []; % 添加目标号
-    max_val = 0;
-    tag = cell(numOfPlatForm, numOfSource);
-    P_Featu = cell(numOfPlatForm, 1);
-    for j = 1:numOfPlatForm % 遍历平台
-        % 平台观测到的特征向量
-        for k = 1:numOfSource % 遍历声源
-            [angle, ~, t_delay, type, fre] = platFormAll(j).getTargetInfo(sourceAll(k), 0);
-            % 虚警
-            % 判断是否检测到目标
-            rand_num = rand;
-            if rand_num <= Pd
-                P_Featu{j}{end + 1} = generate_feature_vector(fre);
-                tag{j, k} = int2str(k);
-                if j == 1
-                    max_val = max_val + 1;
-                    T_R(end + 1) = max_val;
-                    T1{end + 1} = int2str(k);
-                else
-                    if ~ismember(int2str(k), T1)
+%% 获取每个平台的每个目标信息
+
+all_Pd = [1, 0.95, 0.9, 0.85, 0.8];
+count1 = zeros(size(all_Pd));
+count2 = zeros(size(all_Pd));
+index = 0;
+for Pd = all_Pd
+    index = index + 1;
+    % parfor i = 1:numOfM
+    for i = 1:numOfM
+        T_R = []; % 真实新类编号
+        T1 = []; % 添加目标号
+        max_val = 0;
+        tag = cell(numOfPlatForm, numOfSource);
+        P_Featu = cell(numOfPlatForm, 1);
+        for j = 1:numOfPlatForm % 遍历平台
+            % 平台观测到的特征向量
+            for k = 1:numOfSource % 遍历声源
+                [angle, ~, t_delay, type, fre] = platFormAll(j).getTargetInfo(sourceAll(k), 0);
+                % 虚警
+                % 判断是否检测到目标
+                rand_num = rand;
+                if rand_num <= Pd
+                    P_Featu{j}{end + 1} = generate_feature_vector(fre);
+                    tag{j, k} = int2str(k);
+                    if j == 1
                         max_val = max_val + 1;
-                        T1{end + 1} = int2str(k);
-                        T_R(end + 1) = max_val;
+                        T_R(end+1) = max_val;
+                        T1{end+1} = int2str(k);
                     else
-                        for p = 1 : length(T1)
-                            if isequal(T1{p}, int2str(k))
-                                T1{end + 1} = int2str(k);
-                                T_R(end + 1) = T_R(p);
-                                break;
+                        if ~ismember(int2str(k), T1)
+                            max_val = max_val + 1;
+                            T1{end+1} = int2str(k);
+                            T_R(end+1) = max_val;
+                        else
+                            for p = 1:length(T1)
+                                if isequal(T1{p}, int2str(k))
+                                    T1{end+1} = int2str(k);
+                                    T_R(end+1) = T_R(p);
+                                    break;
+                                end
                             end
-                        end    
+                        end
                     end
-                end   
-                % 生成泊松随机数
-                num_false_alarms = poissrnd(lambda); % 生成虚警次数          
-                while  num_false_alarms > 0
-                    max_val = max_val + 1;
-                    T1{end + 1} = ['y',int2str(max_val)];
-                    T_R(end + 1) = max_val;
-                    num_false_alarms = num_false_alarms - 1;
-                    P_Featu{j}{end + 1} = create_new_feature_vector();
-                    tag{j, k} = [tag{j, k}, 'y'];
+                    % 生成泊松随机数
+                    num_false_alarms = poissrnd(lambda); % 生成虚警次数
+                    while num_false_alarms > 0
+                        max_val = max_val + 1;
+                        T1{end+1} = ['y', int2str(max_val)];
+                        T_R(end+1) = max_val;
+                        num_false_alarms = num_false_alarms - 1;
+                        P_Featu{j}{end + 1} = create_new_feature_vector();
+                        tag{j, k} = [tag{j, k}, 'y'];
+                    end
+                else
+                    continue;
                 end
-            else
-                continue;
-            end
-        end % for k = 1:numOfSource % 遍历声源
-    end % for j = 1:numOfPlatForm
-    [res1, res2] = specific(P_Featu, tag, T_R);
-    count1 = count1 + res1;
-    count2 = count2 + res2;
+            end % for k = 1:numOfSource % 遍历声源
+        end % for j = 1:numOfPlatForm
+        [res1, res2] = specific(P_Featu, tag, T_R);
+        count1(index) = count1(index) + res1;
+        count2(index) = count2(index) + res2;
+    end
 end
-fprintf("正确率为%d\n", count2);
+
 toc;
+fig = figure('Units', 'centimeters', 'Position', [20, 5, 12, 12 / 4 * 3]);
+plot(all_Pd, count1./numOfM,'o-')
+hold on
+plot(all_Pd, count2./numOfM, '*-');
+title("本算法与层次聚类算法性能对比",'FontSize', 12)
+legend( '模糊数学特征关联', '层次聚类算法', 'FontSize', 12, 'location', 'southeast')
+xlabel('检测率', 'FontSize', 12)
+ylabel('聚类成功率', 'FontSize', 12)
+ylim([0, 1]);
 % 对特征向量进行区分的函数
 % function [result] = specific(input, tag)
 % 输入：各平台测量的特征，与设置的目标标记
@@ -162,6 +178,7 @@ for i = 1:size(input, 1)
         book(end+1, :) = [i, j];
     end
 end
+
 %% 贪心算法
 % 1. 将平台1的所有测量放到base_feature
 base_len = size(input{1}, 2); % 平台1的测量数
@@ -175,10 +192,10 @@ delta = 0.5; % 关联度门限
 index = 0;
 new_feature_index = [];
 base_feature_index = 1:base_len;
-TT = 1: base_len; % 用于存储聚类标签
+TT = 1:base_len; % 用于存储聚类标签
 while p <= size(input, 1)
     index = index + size(input{p-1}, 2);
-%     fprintf("当前起始索引%d\n", index);
+    %     fprintf("当前起始索引%d\n", index);
     % 取出对应的关联度矩阵
     this_len = size(input{p}, 2); % 此平台的量测个数
     base_feature_index = [base_feature_index, new_feature_index];
@@ -196,85 +213,61 @@ while p <= size(input, 1)
     new_matrix = matrix .* zeta;
     new_matrix(new_matrix < delta) = 0;
 
-    for i = 1 : this_len
+    for i = 1:this_len
         if all(new_matrix(:, i) == 0)
             fprintf("全为0，平台%d测量%d是新的一类\n", p, i);
             new_feature_index = [new_feature_index, i + index];
             base_len = base_len + 1;
             base_feature{base_len} = book(i + index, :);
-            TT(end + 1) = base_len;
-        else 
+            TT(end+1) = base_len;
+        else
             % 找到这一列最大的关联度
             [~, I] = max(zeta(:, i));
             base_feature{I} = [base_feature{I}; book(i + index, :)];
-            TT(end + 1) = I;
+            TT(end+1) = I;
         end
     end
-    % 下方是自己编写的分类函数，
-%     % 按列看
-%     for i = 1:this_len
-%         % 先判断是否全为0
-%         if all(matrix(:, i) == 0)
-%             fprintf("全为0，平台%d测量%d是新的一类\n", p, i);
-%             new_feature_index = [new_feature_index, i + index];
-%             base_len = base_len + 1;
-%             base_feature{base_len} = book(i + index, :);
-%             TT(end + 1) = base_len;
-%         else
-%             % 找到这一列最大的关联度
-%             [M, I] = max(matrix(:, i));
-%             if R(I, i) == 0 && M >= delta
-%                 R(:, i) = 1;
-%                 R(I, :) = 1; % 证明这个已经关联上了 % 将行置为1
-%                 base_feature{I} = [base_feature{I}; book(i + index, :)];
-%                 TT(end + 1) = I;
-%             elseif R(I, i) == 0 && M < delta
-%                 % 添加为新的一类
-%                 fprintf("R = 0, M < delta, 平台%d测量%d是新的一类\n", p, i);
-%                 new_feature_index = [new_feature_index, i + index];
-%                 base_len = base_len + 1;
-%                 base_feature{base_len} = book(i + index, :);
-%                 TT(end + 1) = base_len;
-% %             elseif R(I, i) == 1 && M < delta
-%             elseif R(I, i) == 1
-%                 fprintf("R = 1, M < delta, 平台%d测量%d是新的一类\n", p, i);
-%                 new_feature_index = [new_feature_index, i + index];
-%                 base_len = base_len + 1;
-%                 base_feature{base_len} = book(i + index, :);
-%                 TT(end + 1) = base_len;
-% %             else
-% %                 fprintf("平台%d测量%d已经被关联过了\n", p, i)
-%             end
-%         end
-%     end
     p = p + 1;
 end
 fprintf("共分类%d组\n", base_len);
 % 使用 contains 函数检查包含 'y' 的元素数量
 totalCount = sum(cellfun(@(x) ischar(x) && contains(x, 'y'), tag(:)));
 fprintf("实际有%d组\n", totalCount+3);
-result1 = isequal(T_R, TT);
+result1 = 0;
+if isequal(T_R, TT)
+    result1 = 1;
+end
 average_silhouette1 = mean(silhouette(all_membership, TT));
 
 %% 层次聚类算法————可用
-for i = 1 : size(all_membership, 1)
-    for j = i + 1 : size(all_membership, 2)
+for i = 1:size(all_membership, 1)
+    for j = i + 1:size(all_membership, 2)
         all_membership(j, i) = all_membership(i, j);
     end
 end
 distance = 1 - all_membership;
-Z = linkage(distance,'single');
+Z = linkage(distance, 'single');
 % dendrogram(Z);
-T = cluster(Z, 'cutoff', 1.2, 'criterion', 'distance');
+% T = cluster(Z, 'cutoff', 1.2, 'criterion', 'distance');
+% num_clusters = max(T);
+min_clu = 2;
+max_clu = 6;
+for k = min_clu : max_clu
+    T(k, :) = cluster(Z, "maxclust", k);
+    average_silhouette2(k) = mean(silhouette(all_membership, T(k, :)));
+end
+[~, num_clusters] = max(average_silhouette2);
 % 假设 T 是层次聚类的结果向量
-num_clusters = max(T);
+
 disp(['数据被划分为 ', num2str(num_clusters), ' 个簇。']);
 
-average_silhouette2 = mean(silhouette(all_membership, T));
-disp(average_silhouette1)
-disp(average_silhouette2)
-
-result2 = isequal(num_clusters, totalCount+3);
+% average_silhouette2 = mean(silhouette(all_membership, T));
+% disp(average_silhouette1)
+% disp(average_silhouette2)
+result2 = 0;
+if isequal(num_clusters, totalCount+3)
+    result2 = 1;
+end
 % disp(['最好的silhouette_vals聚类数量为', num2str(best_k)]);
 end
 
@@ -291,7 +284,7 @@ for i = 1:numOfPlatForm
 end
 % 2. 对轴频、桨叶数和谐波个数分别设置隶属度函数
 gaussian_membership = @(x1, x2, delta) exp(-0.5*((x2 - x1) / (delta^2)).^2); % 计算2对1的隶属度 高斯分布
-uniform_membership = @(x1, x2) trapmf(x2, [x1 - 2, x1-1, x1+1, x1 + 2]); % 桨叶数 均匀分布
+uniform_membership = @(x1, x2) trapmf(x2, [x1 - 2, x1 - 1, x1 + 1, x1 + 2]); % 桨叶数 均匀分布
 trapezoidal_membership = @(x1, x2) trimf(x2, [x1 - 2, x1, x1 + 2]); % 谐波个数 % 三角形分布
 % 3. 将所有特征整合一下
 all_feature = [];
@@ -416,7 +409,7 @@ num_lines = size(generated_line_freqs, 2);
 
 % 3. 轴频、叶片数和谐波个数均匀分布
 generated_axis_freq = axis_freq + 0.3 * randi([-1, 1]);
-generated_num_blades = num_blades + datasample([-1, 0, 0, 0, 0,0, 0, 0, 0, 1], 1);
+generated_num_blades = num_blades + datasample([-1, 0, 0, 0, 0, 0, 0, 0, 0, 1], 1);
 generated_num_harmonics = num_harmonics + datasample([-1, -1, 0, 0, 0, 0, 0, 0, 1, 1], 1);
 
 % 构建特征向量

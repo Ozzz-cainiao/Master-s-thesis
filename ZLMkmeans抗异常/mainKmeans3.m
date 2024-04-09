@@ -118,7 +118,7 @@ end
 
 %% 针对某点时刻进行解算
 i = 1; % 目标序号
-expa = 1:1;% 异常参量个数
+expa = 1:4;% 异常参量个数
 index = 0;
 count = zeros(size(expa, 2), 1);
 for pp = expa 
@@ -142,21 +142,21 @@ for pp = expa
             mu = 1; % 均值
             sigma = 0.5; % 方差
             choseP = string();
-%             b = nchoosek(1:2 * numOfPlatForm, pp);
-            b = nchoosek(1:numOfPlatForm, pp);
+            b = nchoosek(1:2 * numOfPlatForm, pp);
+%             b = nchoosek(1:numOfPlatForm, pp);
 
             kk = randi([1, size(b, 1)]); % 随机选取一种组合
 
             for jj = 1 : pp
-%                 if b(kk, jj) <= numOfPlatForm
-%                     currentT(b(kk, jj)) = currentT(b(kk, jj)) + mu + sigma * randn;
-%                     choseP(end + 1) = "t"+num2str(b(kk, jj));
-%                 else
-%                     currentA(b(kk, jj) - numOfPlatForm) = currentA(b(kk, jj) - numOfPlatForm) + 5;
-%                     choseP(end + 1) = "theta"+num2str(b(kk, jj) - numOfPlatForm);
-%                 end
-                currentA(b(kk, jj)) = currentA(b(kk, jj)) + 10;
-                choseP(end + 1) = "theta"+num2str(b(kk, jj));
+                if b(kk, jj) <= numOfPlatForm
+                    currentT(b(kk, jj)) = currentT(b(kk, jj)) + mu + sigma * randn;
+                    choseP(end + 1) = "t"+num2str(b(kk, jj));
+                else
+                    currentA(b(kk, jj) - numOfPlatForm) = currentA(b(kk, jj) - numOfPlatForm) + 5;
+                    choseP(end + 1) = "theta"+num2str(b(kk, jj) - numOfPlatForm);
+                end
+%                 currentA(b(kk, jj)) = currentA(b(kk, jj)) + 10;
+%                 choseP(end + 1) = "theta"+num2str(b(kk, jj));
             end
             
             choseP = choseP(2: end);
@@ -228,8 +228,8 @@ end
 toc;
 figure('Units', 'centimeters', 'Position', [10, 10, 12, 12 / 4 * 3]); % 左下宽高
 plot(expa, count./1000, 'b--o');
-title('异常参量检出率与异常参量个数的关系');
-xlabel('异常参量个数' ,'FontSize', 12);
+title('异常值检出率与异常值个数的关系');
+xlabel('异常值个数' ,'FontSize', 12);
 ylabel('检出率', 'FontSize', 12)
 ylim([0,1])
 %% 实现TDOA算法 这个程序专用 在内部集成了4平台选3的功能

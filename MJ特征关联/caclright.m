@@ -40,4 +40,3 @@ end
 if(flag==1)
     right=1;
 end
-end

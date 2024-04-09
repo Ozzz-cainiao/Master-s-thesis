@@ -4,6 +4,48 @@ clc
 clear
 close all
 
+% 原始的分类数据
+data = {
+    {},{'2y'}, {'3'};
+    {'1'}, {'2'}, {'3'};
+    {'1'}, {'2y'},{'3'};
+    {'1'}, {'2'}, {'3'}
+};
+
+% 将data转换为一个一维的cell数组
+all_classes = unique([data{:}]);
+
+% 新的类别编号
+new_labels = cell(size(data));
+for i = 1:numel(data)
+    % 找到当前数据点在不重复类别中的索引
+    [~, idx] = ismember(data{i}, all_classes);
+    new_labels{i} = num2str(idx);
+end
+
+% 输出新的类别编号
+disp(new_labels);
+
+
+
+% 获取所有不重复的类别
+all_classes = unique([data{:}]);
+
+% 新的类别编号
+new_labels = cell(size(data));
+for i = 1:numel(data)
+    % 找到当前数据点在不重复类别中的索引
+    [~, idx] = ismember(data{i}, all_classes);
+    new_labels{i} = num2str(idx);
+end
+
+% 输出新的类别编号
+disp(new_labels);
+
+
+
+
+
 
 % 示例数据点之间的相似度矩阵
 similarity_matrix = rand(10, 10); % 这里假设相似度矩阵已经计算好

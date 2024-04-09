@@ -1,13 +1,12 @@
 %**************************************************************************
-% 文件名: E:\坚果云同步文件夹\毕设——非合作多目标定位\FinalCode\ZLM特征关联\main.m
+% 文件名: E:\坚果云同步文件夹\毕设——非合作多目标定位\FinalCode\ZLM特征关联\main3.m
 % 版本: v1.0
 % 作者: ZLM
 % 联系方式: Liminzhang7@outlook.com
-% 日期: 2024-03-12
-% 描述: 新特征关联主程序，在这个程序内部实现模糊数学关联,
-%      使用蒙特卡罗统计
-% 输入:
-% 输出:
+% 日期: 2024-04-08
+% 描述: 编写一个与方位关联的性能对比？
+% 输入:  
+% 输出:  
 %**************************************************************************
 
 clc;
@@ -20,9 +19,9 @@ T_all = 0.1; %观测时间
 T_num = T_all / T; %观测次数
 dt = T; % 观测周期
 % var2d = 1.5^2; % 角度制  角度误差
-var2d = 0.2^2; % 角度制  角度误差
-Pd = 0.9; % 检测概率
-lambda = 0.1; % 假设虚警率为 0.1
+var2d = 0.5^2; % 角度制  角度误差
+Pd = 1; % 检测概率
+lambda = 0; % 假设虚警率为 0.1
 %% 布放平台
 platform1 = Platform([0, 0]);
 platform2 = Platform([1e4, 0]);
@@ -46,25 +45,44 @@ F2 = [0.5 * T^2, 0; ...
     0, T]; %
 
 %% 布放目标
-initial_position1 = [4e3, 7e3]; % 初始位置目标1
+initial_position1 = [7e3, 8e3]; % 初始位置目标1
 velocity1 = [0, 0]; % 运动速度（假设在 x 轴上匀速运动）
 acc1 = 0; % 加速度
 feature1 = {5, {460, 580, 650, 790, 880}, 3.9, 6, 6}; % 线谱数量，线谱频率, 轴频，桨叶数、谐波个数
 source1 = SoundSource('CW', feature1, 100, initial_position1, velocity1, F1, F2, acc1);
 
-initial_position2 = [7e3, 2e3]; % 初始位置目标2
-velocity2 = [0, 0]; % 运动速度
+initial_position2 = [7e3, 8.05e3]; % 初始位置目标2
+velocity2 = [0, 10]; % 运动速度
 acc2 = 0; % 加速度
-feature2 = {8, {225,380, 420, 460, 550, 620, 710, 820}, 4.7, 3, 5}; % 线谱数量，线谱频率, 轴频，桨叶数、谐波个数
+feature2 = {8, {225, 380, 420, 460, 550, 620, 710, 820}, 4.7, 3, 5}; % 线谱数量，线谱频率, 轴频，桨叶数、谐波个数
 source2 = SoundSource('CW', feature2, 100, initial_position2, velocity2, F1, F2, acc2);
 
-initial_position3 = [2e3, 5e3]; % 初始位置目标2
+initial_position3 = [7e3, 7.95e3]; % 初始位置目标2
 velocity3 = [0, 0]; % 运动速度
 acc3 = 0; % 加速度
 feature3 = {4, {320, 455, 560, 750}, 6.5, 7, 8}; % 线谱数量，线谱频率, 轴频，桨叶数、谐波个数
 source3 = SoundSource('CW', feature3, 100, initial_position3, velocity3, F1, F2, acc3);
-% sourceAll = [source1];
-sourceAll = [source1, source2, source3];
+
+initial_position4 = [6e3, 5e3]; % 初始位置目标2
+velocity4 = [0, 0]; % 运动速度
+acc4 = 0; % 加速度
+feature4 = {6, {260, 330, 440, 550,650,680}, 5.2, 7, 6}; % 线谱数量，线谱频率, 轴频，桨叶数、谐波个数
+source4 = SoundSource('CW', feature4,100, initial_position4, velocity4, F1, F2, acc4);
+
+initial_position5 = [2e3, 1e3]; % 初始位置目标2
+velocity5 = [0, 0]; % 运动速度
+acc5 = 0; % 加速度
+feature5 = {7, {110, 300, 400, 500,600,700,800}, 6, 6, 7}; % 线谱数量，线谱频率, 轴频，桨叶数、谐波个数
+source5 = SoundSource('CW', feature5, 100, initial_position5, velocity5, F1, F2, acc5);
+
+
+initial_position6 = [8e3, 3e3]; % 初始位置目标2
+velocity6 = [0, 0]; % 运动速度
+acc6 = 0; % 加速度
+feature6 = {4, {180, 390, 499,733}, 4.4, 4, 5}; % 线谱数量，线谱频率, 轴频，桨叶数、谐波个数
+source6 = SoundSource('CW', feature6, 100, initial_position6, velocity6, F1, F2, acc6);
+% sourceAll = [source1, source2];
+sourceAll = [source1, source2, source3, source4, source5, source6];
 
 %% 观测
 % 维度1：平台，维度2：时刻，维度3：目标
@@ -72,11 +90,16 @@ numOfPlatForm = size(platFormAll, 2);
 numOfSource = size(sourceAll, 2);
 target_info_matrix = cell(numOfPlatForm, numOfSource); % cell矩阵
 timeR = cell(1, numOfPlatForm); % 存放时延
-angR = cell(1, numOfPlatForm); % 存放带误差的角度
+angR = cell(1, numOfPlatForm); % 
 realangR = cell(1, numOfPlatForm); % 存放真实的角度
 realwuT = cell(1, numOfPlatForm); % 存放无时延的真实的角度
 % feature_matrix = cell(1, T_num);
 feature_matrix = cell(numOfPlatForm, numOfSource);
+birthPlace = zeros(numOfSource, 2);
+for i = 1:numOfSource
+    birthPlace(i, 1) = sourceAll(i).Position(1, 1);
+    birthPlace(i, 2) = sourceAll(i).Position(1, 2);
+end
 tic;
 %% 获取每个平台的每个目标信息
 count1 = 0;
@@ -86,11 +109,14 @@ count2 = 0;
 for i = 1 : numOfM
     T_R = []; % 真实新类编号
     T1 = []; % 添加目标号
+    angA = [];
     max_val = 0;
     tag = cell(numOfPlatForm, numOfSource);
     P_Featu = cell(numOfPlatForm, 1);
+%     angR = cell(numOfPlatForm, 1); % 存放带误差的角度
     for j = 1:numOfPlatForm % 遍历平台
         % 平台观测到的特征向量
+        sourceAll = [source1, source2, source3, source4, source5, source6];
         for k = 1:numOfSource % 遍历声源
             [angle, ~, t_delay, type, fre] = platFormAll(j).getTargetInfo(sourceAll(k), 0);
             % 虚警
@@ -98,6 +124,10 @@ for i = 1 : numOfM
             rand_num = rand;
             if rand_num <= Pd
                 P_Featu{j}{end + 1} = generate_feature_vector(fre);
+%                 angR{j}{end + 1} = [angle, node(j, 1), node(j, 2)];
+                xx = [angle+ sqrt(var2d) * randn, node(j, 1), node(j, 2)];
+                angA{end + 1} = xx;
+                angR{j}(k, 1) = xx(1);
                 tag{j, k} = int2str(k);
                 if j == 1
                     max_val = max_val + 1;
@@ -121,11 +151,13 @@ for i = 1 : numOfM
                 % 生成泊松随机数
                 num_false_alarms = poissrnd(lambda); % 生成虚警次数          
                 while  num_false_alarms > 0
+                    
                     max_val = max_val + 1;
                     T1{end + 1} = ['y',int2str(max_val)];
                     T_R(end + 1) = max_val;
                     num_false_alarms = num_false_alarms - 1;
                     P_Featu{j}{end + 1} = create_new_feature_vector();
+%                     angR{j}{end + 1} = randi([180, 180]);
                     tag{j, k} = [tag{j, k}, 'y'];
                 end
             else
@@ -133,17 +165,120 @@ for i = 1 : numOfM
             end
         end % for k = 1:numOfSource % 遍历声源
     end % for j = 1:numOfPlatForm
-    [res1, res2] = specific(P_Featu, tag, T_R);
-    count1 = count1 + res1;
-    count2 = count2 + res2;
+    [res1, TT] = specific(P_Featu, tag, T_R);
+    disp(res1);
 end
-fprintf("正确率为%d\n", count2);
 toc;
+%% 纯方位算法
+t_obs = T:T:T_num * T; % 截取10-50s的数据
+angM = cell(length(t_obs), numOfPlatForm);
+for iii = 1:length(t_obs)
+    angM(iii, :) = arrayfun(@(s) angR{s}(~isnan(sort(angR{s}(:, t_obs(1) / T + iii - 1))), t_obs(1) / T + iii - 1), 1:numOfPlatForm, 'un', 0);
+end
+
+%% 探测节点以及目标位置布置场景
+birthPlace = zeros(numOfSource, 2);
+for i = 1:numOfSource
+    birthPlace(i, 1) = sourceAll(i).Position(1, 1);
+    birthPlace(i, 2) = sourceAll(i).Position(1, 2);
+end
+%% 分治贪心关联
+% 调用709函数 传入参数 角度 平台数 平台位置 目标数量
+[outLoctionCAX, outLoctionCAY, outLoctionSPCX, outLoctionSPCY] = calcAll(angM, numOfPlatForm, node, numOfSource, t_obs, T);
+
+% 计算定位结果的平均值
+% resX = nanmean(outLoctionSPCX, 2);
+% resY = nanmean(outLoctionSPCY, 2);
+
+figure('Units', 'centimeters', 'Position', [5, 5, 16, 9]);
+for s = 1:size(node, 1)
+    theta = angR{s}(:, 1);
+    xp = node(s, 1);
+    yp = node(s, 2);
+    % 计算射线的终点
+    end_x = xp + 12e3 * cosd(theta);
+    end_y = yp + 12e3 * sind(theta);
+    % 绘制射线
+    hold on;
+    h= arrayfun(@(i) plot([xp, end_x(i)], [yp, end_y(i)], '--', 'Color', '#808080'), 1:length(theta));
+    hold off;
+end
+% 限制坐标范围
+xlim([-1e3, 11e3]);
+ylim([-1e3, 11e3]);
+hold on
+s1 = scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100);
+s2 = scatter(birthPlace(:, 1), birthPlace(:, 2), 'rp', 'filled', 'LineWidth', 1, 'SizeData', 100);
+s3 = scatter(outLoctionSPCX, outLoctionSPCY,'bs','LineWidth', 1, 'SizeData', 100);
+legend([h(end), s1, s2, s3], '方位测量', '观测站', '目标', '目标定位结果', 'FontSize', 12, 'Location', 'eastoutside')
+hold off
+set(gca, 'Box', 'on')
+title("分治贪心关联结果", 'FontSize', 12)
+xlabel('东向坐标/m', 'FontSize', 12)
+ylabel('北向坐标/m', 'FontSize', 12)
+%% 根据关联的结果进行定位
+[~, num_cluster] = max(TT); 
+ang = cell(num_cluster, 1);
+for i = 1 : num_cluster
+    % 将同一个聚类的方位放到；一起
+    for j = 1 : size(TT, 2)
+        if TT(j) == i
+            ang{i}(end + 1, :) = angA(j);
+        end
+    end
+end
+
+%% 开始定位
+resX = nan(num_cluster, 1);
+resY = nan(num_cluster, 1);
+for i = 1 : num_cluster
+    cur = ang{i};
+    % 提取对应的平台和方位，存到数组中
+    angC = [];
+    nodeT = [];
+    for j = 1 : size(cur, 1)
+        angC(end + 1) = cur{j}(1);
+        nodeT(end + 1, :) = [cur{j}(2), cur{j}(3)];
+    end
+    % 开始计算
+    Est = AOA(angC, nodeT);
+
+    resX(i, 1) = mean(Est(:, 1));
+    resY(i, 1) = mean(Est(:, 2));
+    
+end
+figure('Units', 'centimeters', 'Position', [20, 5, 16, 9]);
+for s = 1:size(node, 1)
+    theta = angR{s}(:, 1);
+    xp = node(s, 1);
+    yp = node(s, 2);
+    % 计算射线的终点
+    end_x = xp + 12e3 * cosd(theta);
+    end_y = yp + 12e3 * sind(theta);
+    % 绘制射线
+    hold on;
+    h= arrayfun(@(i) plot([xp, end_x(i)], [yp, end_y(i)], '--', 'Color', '#808080'), 1:length(theta));
+    hold off;
+end
+% 限制坐标范围
+xlim([-1e3, 11e3]);
+ylim([-1e3, 11e3]);
+hold on
+s1 = scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100);
+s2 = scatter(birthPlace(:, 1), birthPlace(:, 2), 'rp', 'filled', 'LineWidth', 1, 'SizeData', 100);
+s3 = scatter(resX, resY,'bs','LineWidth', 1, 'SizeData', 100);
+legend([h(end), s1, s2, s3], '方位测量', '观测站', '目标', '目标定位结果', 'FontSize', 12, 'Location', 'eastoutside')
+hold off
+set(gca, 'Box', 'on')
+title("基于模糊数学的特征关联结果", 'FontSize', 12)
+xlabel('东向坐标/m', 'FontSize', 12)
+ylabel('北向坐标/m', 'FontSize', 12)
+
 % 对特征向量进行区分的函数
 % function [result] = specific(input, tag)
 % 输入：各平台测量的特征，与设置的目标标记
 % 输出：设置目标个数与真实目标个数是否一致
-function [result1, result2] = specific(input, tag, T_R)
+function [result1, TT] = specific(input, tag, T_R)
 % 计算模糊度矩阵
 membership_value1 = demon_match_degree(input);
 membership_value2 = lineFre_match_degree(input);
@@ -210,50 +345,17 @@ while p <= size(input, 1)
             TT(end + 1) = I;
         end
     end
-    % 下方是自己编写的分类函数，
-%     % 按列看
-%     for i = 1:this_len
-%         % 先判断是否全为0
-%         if all(matrix(:, i) == 0)
-%             fprintf("全为0，平台%d测量%d是新的一类\n", p, i);
-%             new_feature_index = [new_feature_index, i + index];
-%             base_len = base_len + 1;
-%             base_feature{base_len} = book(i + index, :);
-%             TT(end + 1) = base_len;
-%         else
-%             % 找到这一列最大的关联度
-%             [M, I] = max(matrix(:, i));
-%             if R(I, i) == 0 && M >= delta
-%                 R(:, i) = 1;
-%                 R(I, :) = 1; % 证明这个已经关联上了 % 将行置为1
-%                 base_feature{I} = [base_feature{I}; book(i + index, :)];
-%                 TT(end + 1) = I;
-%             elseif R(I, i) == 0 && M < delta
-%                 % 添加为新的一类
-%                 fprintf("R = 0, M < delta, 平台%d测量%d是新的一类\n", p, i);
-%                 new_feature_index = [new_feature_index, i + index];
-%                 base_len = base_len + 1;
-%                 base_feature{base_len} = book(i + index, :);
-%                 TT(end + 1) = base_len;
-% %             elseif R(I, i) == 1 && M < delta
-%             elseif R(I, i) == 1
-%                 fprintf("R = 1, M < delta, 平台%d测量%d是新的一类\n", p, i);
-%                 new_feature_index = [new_feature_index, i + index];
-%                 base_len = base_len + 1;
-%                 base_feature{base_len} = book(i + index, :);
-%                 TT(end + 1) = base_len;
-% %             else
-% %                 fprintf("平台%d测量%d已经被关联过了\n", p, i)
-%             end
-%         end
-%     end
+
     p = p + 1;
 end
 fprintf("共分类%d组\n", base_len);
 % 使用 contains 函数检查包含 'y' 的元素数量
 totalCount = sum(cellfun(@(x) ischar(x) && contains(x, 'y'), tag(:)));
 fprintf("实际有%d组\n", totalCount+3);
-result1 = isequal(T_R, TT);
+result1 = 0;
+if isequal(T_R, TT)
+    result1 = 1;
+end
 average_silhouette1 = mean(silhouette(all_membership, TT));
 
 %% 层次聚类算法————可用
@@ -273,8 +375,10 @@ disp(['数据被划分为 ', num2str(num_clusters), ' 个簇。']);
 average_silhouette2 = mean(silhouette(all_membership, T));
 disp(average_silhouette1)
 disp(average_silhouette2)
-
-result2 = isequal(num_clusters, totalCount+3);
+result2 = 0;
+if isequal(num_clusters, totalCount+3)
+    result2 = 1;
+end
 % disp(['最好的silhouette_vals聚类数量为', num2str(best_k)]);
 end
 
@@ -461,4 +565,22 @@ end
 % 判断一个 cell 是否是另一个 cell 的子集
 function is_sub = isSubset(cell1, cell2)
 is_sub = all(ismember(cell1, cell2, 'rows'), 'all');
+end
+
+%% 最小二乘法定位
+function [EstX, EstY] = LSM(Zt, node)
+theta = Zt;
+theta = theta(~isnan(Zt))';
+x1 = node(~isnan(Zt), 1);
+y1 = node(~isnan(Zt), 2);
+A = [-tand(theta), ones(length(x1), 1)];
+B = y1 - x1 .* tand(theta);
+X = (A' * A) \ A' * B; % 目标位置X=[x;y]
+if isempty(X)
+    EstX = inf;
+    EstY = inf;
+else
+    EstX = X(1);
+    EstY = X(2);
+end
 end
