@@ -4,7 +4,7 @@
 % 作者: ZLM
 % 联系方式: Liminzhang7@outlook.com
 % 日期: 2024-04-08
-% 描述: 编写一个与方位关联的性能对比？
+% 描述: 仿真3 与分治贪心对比
 % 输入:  
 % 输出:  
 %**************************************************************************
@@ -184,7 +184,7 @@ for i = 1:numOfSource
 end
 %% 分治贪心关联
 % 调用709函数 传入参数 角度 平台数 平台位置 目标数量
-[outLoctionCAX, outLoctionCAY, outLoctionSPCX, outLoctionSPCY] = calcAll(angM, numOfPlatForm, node, numOfSource, t_obs, T);
+[outLoctionCAX, outLoctionCAY, outLoctionSPCX, outLoctionSPCY, choose] = calcAll2(angM, numOfPlatForm, node, numOfSource, t_obs, T);
 
 % 计算定位结果的平均值
 % resX = nanmean(outLoctionSPCX, 2);
@@ -218,6 +218,20 @@ xlabel('东向坐标/m', 'FontSize', 12)
 ylabel('北向坐标/m', 'FontSize', 12)
 %% 根据关联的结果进行定位
 [~, num_cluster] = max(TT); 
+% 将TT按照P_Featu长度分割
+nCells = numOfPlatForm;  % cell 数量
+cellSize = numOfSource;  % 每个 cell 的元素数量
+
+% 初始化 cell 矩阵
+Cor_res = cell(nCells, 1);
+
+% 填充 cell 矩阵
+for i = 1:nCells
+    startIndex = (i - 1) * cellSize + 1;
+    endIndex = i * cellSize;
+    Cor_res{i} = num2cell(TT(startIndex:endIndex));
+end
+
 ang = cell(num_cluster, 1);
 for i = 1 : num_cluster
     % 将同一个聚类的方位放到；一起

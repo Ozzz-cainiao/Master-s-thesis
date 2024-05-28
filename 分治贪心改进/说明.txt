@@ -1,0 +1,2 @@
+最终论文，仿真1是mianXx3调用CalcR4,yita=1,没删平台
+仿真2是mainCoherentSound4调用calcR2,yita=1,没删平台

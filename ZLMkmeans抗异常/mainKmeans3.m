@@ -118,13 +118,13 @@ end
 
 %% 针对某点时刻进行解算
 i = 1; % 目标序号
-expa = 1:4;% 异常参量个数
+expa = 4:4;% 异常参量个数
 index = 0;
 count = zeros(size(expa, 2), 1);
 for pp = expa 
     index = index + 1;
 %     for t = 101:1100
-    for t = 101:1100
+    for t = 101:101
 
         % 使用 isnan 函数生成逻辑矩阵，其中非NaN元素为true，NaN元素为false
         nanLogicalMatrix = ~isnan(tMatrix{i});
@@ -221,17 +221,26 @@ for pp = expa
             disp('字符串数组不同');
         end
         % 计算支持度
-%         zhichidu(Res, firstHalfIndices);
+        zhichidu(Res, firstHalfIndices);
+        figure('Units', 'centimeters', 'Position', [20, 10, 12, 12 / 4 * 3]); % 左下宽高
+        hold on
+        plot(Res(:, 1), Res(:, 2), 'b*')
+        plot(respie(:, 1), respie(:, 2), 'r*');
+        plot(mean(respie(:, 1)), mean(respie(:, 2)), 'bp', 'MarkerFaceColor', 'b');
+        scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100);
+        legend("C2", "C1", "C1中心", "观测平台");
+        hold off
+        title("目标位置初测值（全局）")
     end
     fprintf("正确率为%f\n", count(index)./1000);
 end
 toc;
-figure('Units', 'centimeters', 'Position', [10, 10, 12, 12 / 4 * 3]); % 左下宽高
-plot(expa, count./1000, 'b--o');
-title('异常值检出率与异常值个数的关系');
-xlabel('异常值个数' ,'FontSize', 12);
-ylabel('检出率', 'FontSize', 12)
-ylim([0,1])
+% figure('Units', 'centimeters', 'Position', [10, 10, 12, 12 / 4 * 3]); % 左下宽高
+% plot(expa, count./1000, 'b--o');
+% title('异常值检出率与异常值个数的关系');
+% xlabel('异常值个数' ,'FontSize', 12);
+% ylabel('检出率', 'FontSize', 12)
+% ylim([0,1])
 %% 实现TDOA算法 这个程序专用 在内部集成了4平台选3的功能
 function [res, loc] = myTDOA(currentT, node)
 % 开始4选3

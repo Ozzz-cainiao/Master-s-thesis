@@ -84,13 +84,14 @@ Fk1 = Fk;
 %     Fk1{i} = Fk1{i}(non_empty_idx); % 仅保留非空的cell
 % end
 % 在指定位置添加虚警
-% Fk1{2}{end + 1} = 120;
-while num_false_alarms > 0
-    chosP = randi([1, size(node, 1)]);
-    temp = false_alarm_values(num_false_alarms);
-    Fk1{chosP}{end + 1} = temp;
-    num_false_alarms = num_false_alarms - 1;
-end
+Fk1{3}{end + 1} = -124;
+Fk1{4}{end + 1} = 22;
+% while num_false_alarms > 0
+%     chosP = randi([1, size(node, 1)]);
+%     temp = false_alarm_values(num_false_alarms);
+%     Fk1{chosP}{end + 1} = temp;
+%     num_false_alarms = num_false_alarms - 1;
+% end
 ZZ = cellfun(@(x, y) x, Fk, 'un', 0); % 正确关联测量集
 [~, posZ] = arrayfun(@(x) sort(cell2mat(x{1}(:, 1))), ZZ, 'un', 0); % 排序之后的顺序
 [~, posR] = cellfun(@(x) sort(x), posZ, 'un', 0); % 正确关联顺序
@@ -131,7 +132,7 @@ yyy = [];
 index1 = 0;
 for i = 1:numel(posR1)
     if ~isempty(different_elements{i})
-        fprintf('%d 元素是：%s', i, mat2str(different_elements{i}));
+        fprintf('平台第%d 元素是：%s', i, mat2str(different_elements{i}));
         false_value = cell2mat(Z1{i}(different_elements{i}));
         fprintf("                      虚警的值为 %f\n", false_value);
         index1 = index1 + 1;
@@ -145,7 +146,7 @@ xxx
 yyy
 %% 找到虚警测向线
 % fig = figure('Units', 'centimeters', 'Position', [10, 10, 12, 12 / 4 * 3]); % 左下宽高;
-fig = figure('Units', 'centimeters', 'Position', [20, 5, 16, 9]);
+fig = figure('Units', 'centimeters', 'Position', [20, 5, 12, 0.75*9]);
 if ~isempty(xxx)
     index2 = 1;
 else
@@ -180,9 +181,9 @@ s2 = scatter(choSource(:, 1), choSource(:, 2), 'rp', 'filled', 'LineWidth', 1, '
 legend([h{end}(1), s1, s2], '方位测量', '观测站', '目标', 'FontSize', 12, 'Location', 'eastoutside')
 hold off
 set(gca, 'Box', 'on')
-xlabel('东向坐标/m', 'FontSize', 12)
-ylabel('北向坐标/m', 'FontSize', 12)
-title("虚警测向线情况")
+xlabel('东向坐标/m', 'FontSize', 10)
+ylabel('北向坐标/m', 'FontSize', 10)
+% title("所有情况")
 disp("Finish");
 
 % %% 画出所有平台的测向线，包括虚警和漏报

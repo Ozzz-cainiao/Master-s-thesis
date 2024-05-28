@@ -21,7 +21,6 @@ T_num = T_all / T; %观测次数
 dt = T; % 观测周期
 % var2d = 1.5^2; % 角度制  角度误差
 var2d = 1^2; % 角度制  角度误差
-pd = 0.9; % 检测概率
 % 虚警期望
 
 %% 运动模型
@@ -41,12 +40,14 @@ F2 = [0.5 * T^2, 0; ...
 %% 低杂波双目标四平台
 % 布放目标
 initial_position1 = [4e3, 7e3]; % 初始位置目标1
-velocity1 = [10, 0]; % 运动速度（假设在 x 轴上匀速运动）
+
+% initial_position1 = [4e3, 7e3]; % 初始位置目标1
+velocity1 = [0, 0]; % 运动速度（假设在 x 轴上匀速运动）
 acc1 = 0; % 加速度
 source1 = SoundSource('CW', 2e3, 100, initial_position1, velocity1, F1, F2, acc1);
 
 initial_position2 = [7e3, 2e3]; % 初始位置目标2
-velocity2 = [10, 10]; % 运动速度
+velocity2 = [0, 0]; % 运动速度
 acc2 = 0; % 加速度
 source2 = SoundSource('LFM', [1e2, 2e2], [100, 50], initial_position2, velocity2, F1, F2, acc2);
 
@@ -55,6 +56,8 @@ velocity3 = [0, 0]; % 运动速度
 acc3 = 0; % 加速度
 source3 = SoundSource('CW', [2e3], [100], initial_position3, velocity3, F1, F2, acc3);
 initial_position4 = [3e3, 1e3]; % 初始位置目标2
+% initial_position4 = [4e3, 1.5e3]; % 初始位置目标2
+
 velocity4 = [0, 0]; % 运动速度
 acc4 = 0; % 加速度
 source4 = SoundSource('CW', [1e3, 2e3], [100, 500], initial_position4, velocity4, F1, F2, acc4);
@@ -100,8 +103,8 @@ sourceAll = [source1, source2, source3, source4, source5];
                 [angle, ~, t_delay, type, fre] = platFormAll(j).getTargetInfo(sourceAll(k), 0);
                 t_Num = round(t_delay/dt) + i; % 放到此时刻传播时延之前的时刻
                 myStructArray(t_Num) = struct('angle', angle, 'type', type, 'fre', fre, 't_delay', t_delay);
-%                 angR{j}(k, t_Num) = angle + sqrt(var2d) * randn;
-                angR{j}(k, t_Num) = angle + 0;
+                angR{j}(k, t_Num) = angle + sqrt(var2d) * randn;
+%                 angR{j}(k, t_Num) = angle + 0;
 
                 realangR{j}(k, t_Num) = angle;
             else
@@ -109,7 +112,9 @@ sourceAll = [source1, source2, source3, source4, source5];
                 [angle, ~, t_delay, type, fre] = platFormAll(j).getTargetInfo(sourceAll(k), dt);
                 t_Num = round(t_delay/dt) + i; % 放到此时刻传播时延之前的时刻
                 myStructArray(t_Num) = struct('angle', angle, 'type', type, 'fre', fre, 't_delay', t_delay);
-                angR{j}(k, t_Num) = angle + 0; % 这个结果是度
+%                 angR{j}(k, t_Num) = angle + 0; % 这个结果是度
+                angR{j}(k, t_Num) = round(angle + sqrt(var2d) * randn, 2);
+
                 realangR{j}(k, t_Num) = angle; % 这个结果是度
             end
         end % for i = 1: T_num
@@ -186,10 +191,16 @@ y = cell(numOfPlatForm, 1);
 fig = figure;
 figure(fig)
 hold on
-s1 = scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100);
-s2 = scatter(birthPlace(:, 1), birthPlace(:, 2), 'rp', 'filled', 'LineWidth', 1, 'SizeData', 100);
-s3 = scatter(resX, resY,'bs','LineWidth', 1, 'SizeData', 100);
-legend([s3, s1, s2], '目标定位结果', '观测站', '目标', 'FontSize', 12)
+s1 = scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100, 'DisplayName', '平台');
+s2 = scatter(birthPlace(:, 1), birthPlace(:, 2), 'rp', 'filled', 'LineWidth', 1, 'SizeData', 100, 'DisplayName', '预设目标');
+% s3 = scatter(outLoctionSPCX(:, 40), outLoctionSPCY(:, 40),'bs','LineWidth', 1, 'SizeData', 100);
+% 计算第 40 列非 NaN 元素的数量
+nonNaNCount = sum(~isnan(outLoctionSPCX(:,25)));
+for i = 1 : nonNaNCount
+    s3(i) = scatter(outLoctionSPCX(i, 25), outLoctionSPCY(i, 25),'s','LineWidth', 1, 'SizeData', 100,'DisplayName', ['目标', num2str(i)] );
+end
+legend;
+% legend([s1, s2, ], '目标定位结果', '观测站', '目标', 'FontSize', 12)
 hold off
 set(gca, 'Box', 'on')
 xlabel('东向坐标/m', 'FontSize', 12)

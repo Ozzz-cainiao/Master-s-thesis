@@ -14,23 +14,32 @@ clear
 close all
 warning('off')
 %%
-num = 1000; % 蒙特卡罗次数
+filename = 'simulation_results_fangzhen3.xlsx';
+% 检查文件是否存在
+if exist(filename, 'file')
+    delete(filename);  % 如果文件存在，则删除
+end
+num = 10; % 蒙特卡罗次数
 res = zeros(num, 1); % 计算正确率
 record = cell(num, 1);
 sample = cell(num, 1);
+% 
+% choseNum = {[1, 4];
+%             [1, 3, 4];
+%             [1, 2, 3, 4];
+%             [1, 2, 3, 4, 5];
+%             [1, 2, 3, 4, 5, 6]};
 
-choseNum = {[1, 4];
-            [1, 3, 4];
+choseNum = {
             [1, 2, 3, 4];
-            [1, 2, 3, 4, 5];
-            [1, 2, 3, 4, 5, 6]};
+           };
 tic;
 iii = 1;
 while iii <= size(choseNum, 1)
-    parfor count = 1:num
+    for count = 1:num
         % 虚警服从均值泊松分布,虚警特征实际角度根据叠加产生，
-        % lambda = 0.1;  % 泊松分布的参数（虚警率）
-        lambda = 0.15;
+        lambda = 1;  % 泊松分布的参数（虚警率）
+%         lambda = 0.15;
         num_false_alarms = poissrnd(lambda);
         % 生成均匀分布的虚警信号值
         if num_false_alarms > 0
@@ -154,63 +163,79 @@ while iii <= size(choseNum, 1)
             record{count} = false_value;
             sample{count} = false_alarm_values;
         end
+                % 计算每次实验的召回率
+        % 计算TP：检测到的异常中有多少在实际设置的异常中也出现
+        TP = sum(ismember(false_value, false_alarm_values));
+        
+        % 计算FN：实际设置的异常中有多少没有被检测到
+        FN = sum(~ismember(false_alarm_values, false_value));
+        
+        % 计算召回率
+        if FN == 0
+            recall(count) = 1;
+        else
+            recall(count) = TP / (TP + FN);
+        end
+
+        % 计算TP和FP
+        TP = sum(ismember(false_value, false_alarm_values));
+        FP = sum(~ismember(false_value, false_alarm_values));
+        if TP== 0 && FP == 0
+            precision(count) = 1;
+        else
+            % 计算准确率
+            precision(count) = TP / (TP + FP);
+        end
+        data_to_write = [record, sample];
+        if iii == 1
+            startRow = 1;
+        else
+            % 计算上一次写入后的下一行开始位置
+            startRow = startRow + length(data_to_write);
+        end
+        writecell(data_to_write, filename, 'Sheet', 'Sheet1', 'Range', ['A' num2str(startRow)]);
+
     end
+        mean_recall(iii) = mean(recall);
+    mean_precision(iii) = mean(precision);
     num_same_cells(iii) = sum(cellfun(@isequal, record, sample), 'all');
     toc;
     iii = iii + 1;
 end
+winopen(filename);
+
+% %% 画图 虚警检出率与虚警率的关系
+% figure('Units', 'centimeters', 'Position', [10, 10, 12, 12 / 4 * 3]); % 左下宽高
+% plot(cellfun(@numel, choseNum), num_same_cells./1000, 'b--o');
+% title('虚警检出率与目标个数的关系');
+% xlabel('目标个数' ,'FontSize', 10);
+% ylabel('虚警检出率', 'FontSize', 10)
+% ylim([0,1])
 
 %% 画图 虚警检出率与虚警率的关系
-figure('Units', 'centimeters', 'Position', [10, 10, 12, 12 / 4 * 3]); % 左下宽高
+figure('Units', 'centimeters', 'Position', [10, 10, 10, 10 / 4 * 3]); % 左下宽高
 plot(cellfun(@numel, choseNum), num_same_cells./1000, 'b--o');
-title('虚警检出率与目标个数的关系');
-xlabel('目标个数' ,'FontSize', 12);
-ylabel('虚警检出率', 'FontSize', 12)
+title('异常检出率与目标个数的关系');
+
+yticks(0:0.1:1); % 设置 y 轴刻度步长
+xlabel('目标个数', 'FontSize', 10)
+ylabel('检出率', 'FontSize', 10)
 ylim([0,1])
-% %% 画出真实目标分布
-% figure('Units', 'centimeters', 'Position', [10, 10, 12, 12 / 4 * 3]); % 左下宽高
-% for i = 1 : length(choNum)
-%     hold on;
-%     plot(choSource(i, 1), choSource(i, 2), 'o');
-% end
-% scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100);
-% % legend( '目标1', '目标2','观测站', 'FontSize', 12)
-% title('目标实际位置');
-% set(gca, 'Box', 'on')
-% xlabel('东向坐标/m', 'FontSize', 12)
-% ylabel('北向坐标/m', 'FontSize', 12)
-%
-% %% 画出所有平台的测向线，包括虚警和漏报
-% % Ylim  = [-3e3, 3e3];
-% % xgrid = -3e3:10:3e3;
-% xgrid = -1e3:10:5e3;
-% Ylim  = [-1e3, 5e3];
-% y = cell(size(node, 1), 1);
-% % fig = figure('Units', 'centimeters', 'Position', [10, 10, 12, 12 / 4 * 3]); % 左下宽高;
-% fig = figure('Units', 'centimeters', 'Position', [20, 5, 16, 9]);
-% % 下方将直线修改为射线
-% for s = 1:size(node, 1)
-%     theta = cell2mat(Fk1{s}(:, 1));
-%     xp = node(s, 1);
-%     yp = node(s, 2);
-%     % 计算射线的终点
-%     end_x = xp + 8e3 * cosd(theta);
-%     end_y = yp + 8e3 * sind(theta);
-%     % 绘制射线
-%     hold on;
-%     h = arrayfun(@(i) plot([xp, end_x(i)], [yp, end_y(i)], '--', 'Color', '#808080'), 1:length(theta));
-%     hold off;
-% end
-% % 限制坐标范围
-% xlim([-500, 4500]);
-% ylim([-500, 4500]);
-% hold on
-% s1 = scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100);
-% s2 = scatter(choSource(:, 1), choSource(:, 2), 'rp', 'filled', 'LineWidth', 1, 'SizeData', 100);
-% legend([h(end), s1, s2], '方位测量', '观测站', '目标', 'FontSize', 12, 'Location','eastoutside')
-% hold off
-% set(gca, 'Box', 'on')
-% xlabel('东向坐标/m', 'FontSize', 12)
-% ylabel('北向坐标/m', 'FontSize', 12)
-% title("各平台的测向线情况")
-% disp("Finish");
+
+figure('Units', 'centimeters', 'Position', [10, 10, 10, 10 / 4 * 3]); % 左下宽高
+plot(cellfun(@numel, choseNum), mean_recall, 'b--o');
+title('召回率与目标个数的关系');
+
+yticks(0:0.1:1); % 设置 y 轴刻度步长
+xlabel('目标个数', 'FontSize', 10)
+ylabel('召回率', 'FontSize', 10)
+ylim([0,1])
+
+figure('Units', 'centimeters', 'Position', [10, 10, 10, 10 / 4 * 3]); % 左下宽高
+plot(cellfun(@numel, choseNum), mean_precision, 'b--o');
+title('准确率与目标个数的关系');
+
+yticks(0:0.1:1); % 设置 y 轴刻度步长
+xlabel('目标个数', 'FontSize', 10)
+ylabel('准确率', 'FontSize', 10)
+ylim([0,1])

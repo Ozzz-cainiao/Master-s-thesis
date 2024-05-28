@@ -4,8 +4,7 @@
 % 作者: ZLM
 % 联系方式: Liminzhang7@outlook.com
 % 日期: 2023-11-22
-% 描述: 作为面向对象编程的主程序，在这个程序中实现对各个类的实例化
-%       实现抗异常参量的程序验证
+% 描述: 验证算法可行性 
 % 输入:
 % 输出:
 %**************************************************************************
@@ -102,16 +101,6 @@ for j = 1:numOfPlatForm % 遍历平台
     end % for k = 1:numOfSource % 遍历声源
 
 end % for j = 1:numOfPlatForm
-
-% %% 画出目标运动的实际轨迹
-% figure('Units', 'centimeters', 'Position', [10, 10, 12, 12 / 4 * 3]); % 左下宽高
-% hold on
-% for i = 1:numOfSource
-%     plot(sourceAll(i).Position(:, 1), sourceAll(i).Position(:, 2), '.');
-% end
-% scatter(node(:, 1), node(:, 2), 'b^', 'filled', 'LineWidth', 0.5, 'SizeData', 100);
-% legend('target1', '观测平台');
-% title('目标实际运动轨迹');
 
 %% 先把正确的解算结果计算一下 但是也要加时空关联
 % AOATime(realangM, node, 2, t_obs, T);

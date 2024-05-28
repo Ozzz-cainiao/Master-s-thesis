@@ -16,7 +16,7 @@ clc
 clear
 close all
 %% 重复次数
-count = 30;
+count = 500;
 res = zeros(count, 4);
 % sumOfFre = zeros(1, length(t));
 for num = 1 : count
@@ -72,7 +72,7 @@ for i = 1:T_num
             if i == 1
                 %                 angR{j} = repmat(struct('angle', [], 'type', [], 'fre', []), T_all, numOfSource);
                 angR{j} = nan(T_all, numOfSource); % 现在只用来存放方位信息
-                [angle, ~, t_delay, type, fre, platFormAll(j)] = platFormAll(j).getTargetInfo(sourceAll(k), 0);
+                [angle, ~, t_delay, type, fre, platFormAll(j)] = platFormAll(j).getTargetInfoFre(sourceAll(k), 0, 0, initial_position1(2));
                 t_Num = round(t_delay/dt) + i; % 放到此时刻传播时延之前的时刻
                 target_info_matrix{j, t_Num, k} = struct('angle', angle, 'type', type, 'fre', fre); %
                 %                 angR{j}(t_Num, k) = struct('angle', angle, 'type', type, 'fre', fre);
@@ -81,7 +81,7 @@ for i = 1:T_num
                 Fre{j}(t_Num, k) = fre + sqrt(var2f) * randn; % 加时延
             else
                 sourceAll(k) = sourceAll(k).updatePosition();
-                [angle, ~, t_delay, type, fre, platFormAll(j)] = platFormAll(j).getTargetInfo(sourceAll(k), dt);
+                [angle, ~, t_delay, type, fre, platFormAll(j)] = platFormAll(j).getTargetInfoFre(sourceAll(k), dt, 0, initial_position1(2));
                 t_Num = round(t_delay/dt) + i; % 放到此时刻传播时延之前的时刻
                 target_info_matrix{j, t_Num, k} = struct('angle', angle, 'type', type, 'fre', fre); %
                 %                 angR{j}(t_Num, k) = struct('angle', angle, 'type', type, 'fre', fre);
@@ -135,4 +135,6 @@ figure
 
 plot(t, FFre, 'r-', times, myfun(averageValue, times), 'b-')
 legend('观测频率', '估计频率')
-title('观测频率与估计频曲线')
+title('观测频率与估计频率曲线')
+xlabel('t/s')
+ylabel('f/Hz')

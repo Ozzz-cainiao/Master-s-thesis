@@ -45,7 +45,8 @@ for iii = 1:length(t_obs)
             outDCGT = dcgt(Z, node, [var2, PD, Fai], [M, Q, I]);
             outLocs = outDCGT(:, 1:length(Z)); % 输出的线序号结果
             % 根据线序号的索引，追加每个目标的方位和时延信息？
-            
+            disp("outLocs");
+            outLocs
             outLocX = outDCGT(:, length(Z)+1);
             outLocY = outDCGT(:, length(Z)+2);
         end

@@ -14,8 +14,8 @@ Z       = varargin{1};
 node    = varargin{2};
 area    = varargin{3};
 var2    = varargin{4}(1); % 均方根误差
-PD      = varargin{4}(2);
-Fai     = varargin{4}(3);
+PD      = varargin{4}(2); % 检测概率
+Fai     = varargin{4}(3); % pi/2
 ns      = cellfun(@(x)size(x,1),Z);
 S       = size(node,1);                 % 节点数
 zs      = arrayfun(@(x)cat(2,cell2mat(x{1,1}(:,1))),Z,'un',0);          % 角度特征元胞组
@@ -44,10 +44,10 @@ for k = 1:size(iter,1)	% 一次循环替代嵌套
     for ii = 1 : S
         if isnan(zkk(ii))
             u       = 0;
-            c(ii)   = (u-1)*log(1-PD);
+            c(ii)   = (u-1)*log(1-PD); % 漏报
         else
             u       = 1;
-            esis    = AngelDeal(zkk(ii),angE(ii))/180*pi;
+            esis    = AngelDeal(zkk(ii),angE(ii))/180*pi; % 计算并返回两个角度之间最小的差值
             c(ii)   = u*(-log(PD*Fai/sqrt(2*pi*var2))+0.5*(esis/sqrt(var2))^2);
         end
     end

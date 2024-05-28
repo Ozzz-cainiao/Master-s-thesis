@@ -5,34 +5,35 @@
 % 联系方式: Liminzhang7@outlook.com
 % 日期: 2023-12-09
 % 描述: 这是调用精度分析的主程序
-% 输入:  
-% 输出:  
+% 输入:
+% 输出:
 %**************************************************************************
 clc
 clear
 close all
+
 %% 调用函数
 % function []=AccuracyAnalysis(xy,Xmin,Xmax,Ymin,Ymax,Step)
 % function [] = Analysis2(arrx, arry, Xmin, Xmax, Ymin, Ymax, Step, errornor)
 
-arrx=[500,1500];
-arry=[1000,1000];
+% arrx = [500, 1500];
+% arry = [0, 0];
+
+%% 仿真3
+arrx=[0,1000,2000];
+arry=[0,2000,0];
 % arrx=[300,1000,1700];
 % arry=[300,1700,300];
 % arrx=[0,2000,2000,0];
 % arry=[0,0,2000,2000];
 % arrx=[300,1700,1700,300];
 % arry=[300,300,1700,1700];
-errornor = [0, 0, (0.1 / 180 * pi)^2]; %
+errornor = [0, 0, (1/ 180 * pi)^2]; % 仅方位角有误差 仿真1
 
-% errornor = [0, 0, (2 / 180 * pi)^2]; %
-
-% errornor = [1^2, 1^2, (1 / 180 * pi)^2]; %
-% errornor = [5^2, 5^2, (1 / 180 * pi)^2]; %
+% errornor = [0, 0, (2 / 180 * pi)^2]; % 仿真1 方位角误差
+% errornor = [5^2, 5^2, (1 / 180 * pi)^2]; % 平台位置有误差 仿真2
+% errornor = [20^2, 20^2, (1 / 180 * pi)^2]; % 平台位置有误差 仿真2
 
 % errornor1=(0.2 / 180 * pi)^2;%度换成弧度
 
-Analysis2(arrx,arry,0,2000,0,2000,10,errornor);
-% AccuracyAnalysis(list,0,2000,0,2000,10,errornor);
-% Analysis(arrx,arry,0,2000,0,2000,10,errornor);
-% five(arrx,arry,0,2000,0,2000,10,errornor1);
+Analysis2(arrx, arry, 0, 2000, 0, 2000, 10, errornor);

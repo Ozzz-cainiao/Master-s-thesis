@@ -4,8 +4,8 @@
 % 作者: ZLM
 % 联系方式: Liminzhang7@outlook.com
 % 日期: 2024-04-02
-% 描述: ZLM多维分配抗异常参量（抗虚警）程序1
-%       主要实现在目标数不变的情况下，改变虚警率，检测算法的性能
+% 描述: ZLM多维分配抗异常参量（抗虚警）仿真2
+%       主要实现在目标数不变的情况下，改变异常出现的平均次数，检测算法的性能
 % 输入:  
 % 输出:  
 %**************************************************************************
@@ -14,17 +14,26 @@ clear
 close all
 warning('off')
 %%
+filename = 'simulation_results.xlsx';
+% 检查文件是否存在
+if exist(filename, 'file')
+    delete(filename);  % 如果文件存在，则删除
+end
 num = 1000; % 蒙特卡罗次数
 res = zeros(num, 1); % 计算正确率
 record = cell(num, 1);
 sample = cell(num, 1);
 all_lambda = [0, 0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 1];
+% all_lambda = 1;
+
 num_same_cells = size(all_lambda);
+mean_recall = size(all_lambda);
+mean_precision = size(all_lambda);
 tic;
 iii = 0;
 for lambda = all_lambda
     iii = iii + 1;
-    parfor count = 1:num
+    for count = 1:num
 %     for count = 1:num
         % 虚警服从均值泊松分布,虚警特征实际角度根据叠加产生，
         % lambda = 0.1;  % 泊松分布的参数（虚警率）
@@ -149,22 +158,83 @@ for lambda = all_lambda
         end
         if ~isempty(false_alarm_values)
             res(count) = 1;
-            record{count} = false_value;
-            sample{count} = false_alarm_values;
+            record{count} = false_value; % 找到的值
+            sample{count} = false_alarm_values; % 设置的虚警
         end
+        % 计算每次实验的召回率
+        % 计算TP：检测到的异常中有多少在实际设置的异常中也出现
+        TP = sum(ismember(false_value, false_alarm_values));
+        
+        % 计算FN：实际设置的异常中有多少没有被检测到
+        FN = sum(~ismember(false_alarm_values, false_value));
+        
+        % 计算召回率
+        if FN == 0
+            recall(count) = 1;
+        else
+            recall(count) = TP / (TP + FN);
+        end
+
+        % 计算TP和FP
+        TP = sum(ismember(false_value, false_alarm_values));
+        FP = sum(~ismember(false_value, false_alarm_values));
+        if TP== 0 && FP == 0
+            precision(count) = 1;
+        else
+            % 计算准确率
+            precision(count) = TP / (TP + FP);
+        end
+        data_to_write = [record, sample];
+        if iii == 1
+            startRow = 1;
+        else
+            % 计算上一次写入后的下一行开始位置
+            startRow = startRow + length(data_to_write);
+        end
+%         writecell(data_to_write, filename, 'Sheet', 'Sheet1', 'Range', ['A' num2str(startRow)]);
+
     end
+
+%     precision_data(iii,:) = precision;
+%     reacll_data(iii, :) = recall;
+
+    mean_recall(iii) = mean(recall);
+    mean_precision(iii) = mean(precision);
     num_same_cells(iii) = sum(cellfun(@isequal, record, sample), 'all');
+    % 计算召回率 检出的异常与所有异常的比例 这是针对展会率
+    %计算准确率
+
+
     toc;
 end
-
+% winopen(filename);
 %% 画图 虚警检出率与虚警率的关系
-figure('Units', 'centimeters', 'Position', [10, 10, 12, 12 / 4 * 3]); % 左下宽高
+figure('Units', 'centimeters', 'Position', [10, 10, 10, 10 / 4 * 3]); % 左下宽高
 plot(all_lambda, num_same_cells./1000, 'b--o');
-title('虚警检出率与虚警率的关系');
-xlabel('虚警率', 'FontSize', 12)
-ylabel('虚警检出率', 'FontSize', 12)
+title('异常检出率与异常出现次数的关系');
 xticks(0:0.1:1); % 设置 x 轴刻度步长
 yticks(0:0.1:1); % 设置 y 轴刻度步长
+xlabel('异常平均出现次数/次', 'FontSize', 10)
+ylabel('检出率', 'FontSize', 10)
+ylim([0,1])
+
+figure('Units', 'centimeters', 'Position', [10, 10, 10, 10 / 4 * 3]); % 左下宽高
+plot(all_lambda, mean_recall, 'b--o');
+title('召回率与异常出现次数的关系');
+xticks(0:0.1:1); % 设置 x 轴刻度步长
+yticks(0:0.1:1); % 设置 y 轴刻度步长
+xlabel('异常平均出现次数/次', 'FontSize', 10)
+ylabel('召回率', 'FontSize', 10)
+ylim([0,1])
+
+figure('Units', 'centimeters', 'Position', [10, 10, 10, 10 / 4 * 3]); % 左下宽高
+plot(all_lambda, mean_precision, 'b--o');
+title('准确率与异常出现次数的关系');
+xticks(0:0.1:1); % 设置 x 轴刻度步长
+yticks(0:0.1:1); % 设置 y 轴刻度步长
+xlabel('异常平均出现次数/次', 'FontSize', 10)
+ylabel('准确率', 'FontSize', 10)
+ylim([0,1])
 % %% 画出真实目标分布
 % figure('Units', 'centimeters', 'Position', [10, 10, 12, 12 / 4 * 3]); % 左下宽高
 % for i = 1 : length(choNum)

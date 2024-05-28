@@ -12,7 +12,7 @@
 clc
 clear
 close all
-
+tic;
 syms x1 y1 x2 y2 xs ys c t1 t2 ts theta1 theta2
 % theta1 角目标-平台1-平台2
 f1 = (x1 - xs)^2 + (y1 - ys)^2 - c^2 * (t1 - ts)^2;
@@ -46,14 +46,12 @@ clearvars -except M Mt M1 M2 Mc Ma
 
 x = 0:2:2000;
 y = (0:2:2000)';
-[x1, y1, x2, y2] = deal(500, 1000, 1500, 1000); %% 平台位置
+[x1, y1, x2, y2] = deal(500, 0, 1500, 0); %% 平台位置
 [lenx, leny] = deal(length(x), length(y));
-% errornor = [2^2, 2^2, 0.002^2, 1.5^2, 1^2]; % dx^2 dy^2 t^2 c^2 theta误差
-% errornor = [2^2, 2^2, 0.001^2, 1.5^2, (0.1 / 180 * pi)^2, (0.1 / 180 * pi)^2]; % dx^2 dy^2 t^2 c^2 theta误差
-% errornor = [2^2, 2^2, 0.001^2, 3^2, (0.1 / 180 * pi)^2, (0.1 / 180 * pi)^2]; % dx^2 dy^2 t^2 c^2 theta误差
-errornor = [2^2, 2^2, 0.001^2, 3^2, (1 / 180 * pi)^2, (1 / 180 * pi)^2]; % dx^2 dy^2 t^2 c^2 theta误差
-
 % errornor = [2^2, 2^2, 0.001^2, 1.5^2, (0.5 / 180 * pi)^2, (0.5 / 180 * pi)^2]; % dx^2 dy^2 t^2 c^2 theta误差
+% errornor = [2^2, 2^2, 0.001^2, 1.5^2, (1 / 180 * pi)^2, (1 / 180 * pi)^2]; % dx^2 dy^2 t^2 c^2 theta误差
+
+errornor = [2^2, 2^2, 0.003^2, 1.5^2, (0.5 / 180 * pi)^2, (0.5 / 180 * pi)^2]; % dx^2 dy^2 t^2 c^2 theta误差
 
 errorsum = zeros(lenx, leny);
 c = 1500;
@@ -88,17 +86,35 @@ for ii = 1:lenx
     end
 end
 
-figure
-surf(x, y, abs(errorsum))
+limi = 20;
+% 绘制填充的等高线图
+errorsum(errorsum > limi) = limi;
+figure('Units', 'centimeters', 'Position', [10, 10, 7.5, 6]); % 左下宽高
+contourf(x, y, abs(errorsum), 5 ,'ShowText','on'); % 这里的20是等高线的数量
+% figure
+% surf(x, y, abs(errorsum))
 set(gca, 'YDir', 'normal');
-colorbar;
+% colorbar;
 xlabel('x/m');
 ylabel('y/m');
-title('TOA-AOA平面角解算误差');
-clim([0, 10]); colormap jet
-shading interp;view(0,90)
+% title('TOA-AOA平面角解算误差');
+% clim([0, 15]); 
+colormap jet
+shading interp;
+% view(0,90)
 average_value = nanmean(errorsum(:));
 fprintf('%.2f\n', average_value); % 显示2位小数
+% figure
+% surf(x, y, abs(errorsum))
+% set(gca, 'YDir', 'normal');
+% colorbar;
+% xlabel('x/m');
+% ylabel('y/m');
+% title('TOA-AOA平面角解算误差');
+% clim([0, 10]); colormap jet
+% shading interp;view(0,90)
+% average_value = nanmean(errorsum(:));
+% fprintf('%.2f\n', average_value); % 显示2位小数
 
 %% 两个平台一个角参与解算
 clc
@@ -175,16 +191,22 @@ for ii = 1:lenx
         errorsum(jj, ii) = sqrt(trace(error));
     end
 end
-
-figure
-surf(x, y, abs(errorsum))
+limi = 50;
+% 绘制填充的等高线图
+errorsum(errorsum > limi) = limi;
+figure('Units', 'centimeters', 'Position', [10, 10, 7.5, 6]); % 左下宽高
+contourf(x, y, abs(errorsum), 5 ,'ShowText','on'); % 这里的20是等高线的数量
+% figure
+% surf(x, y, abs(errorsum))
 set(gca, 'YDir', 'normal');
-colorbar;
+% colorbar;
 xlabel('x/m');
 ylabel('y/m');
-title('TOA-AOA平面角解算误差');
-clim([0, 15]); colormap jet
-shading interp;view(0,90)
+% title('TOA-AOA平面角解算误差');
+% clim([0, 15]); 
+colormap jet
+shading interp;
+% view(0,90)
 average_value = nanmean(errorsum(:));
 fprintf('%.2f\n', average_value); % 显示2位小数
 

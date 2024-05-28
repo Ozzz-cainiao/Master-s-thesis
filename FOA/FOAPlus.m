@@ -163,13 +163,15 @@ for i = 1:numOfPlatForm
     %     figure
     %     plot(FFre);
     times = linspace(tt(1), tt(end));
-    figure
+%     figure
+    figure('Units', 'centimeters', 'Position', [10, 10, 7.5, 7.5 / 4 * 3]); % 左下宽高
+
     %     plot(tt, FFre, 'ko', times, myfun(cell2mat(xx(i)), times), 'b-')
     %     legend('Data', 'Fitted exponential')
     %     title('Data and Fitted Curve')
     %     plot(t, FFre, 'r-', times, myfun(averageValue, times), 'b-')
     plot(tt, FFre, 'r-', times, myfun(cell2mat(xx(i)), times), 'b-')
-
+    xlabel("时间(s)");ylabel("频率(Hz)")
     legend('观测频率', '估计频率')
     title(['观测平台', num2str(i), '观测频率与估计频曲线'])
 end
@@ -237,10 +239,51 @@ end
 fprintf('真实距离为 %.2f，%.2f，%.2f，%.2f\n', realDis(1), realDis(2), realDis(3), realDis(4));
 fprintf('估计的k的值是 %.2f，b 的值是 %.2f\n', res(minIndex, 1), res(minIndex, 2));
 
+%% 下方是4月16降重时想到的办法。程序可用，待采纳
+% 准备观测点数据
+% points 是一个 Nx2 的矩阵，每一行是一个观测点的 (x, y) 坐标。
+points = node;
+
+% distances 是一个 Nx1 的向量，每个元素是观测点到直线的距离。
+distances = d;
+% 初始猜测的参数 (k, b)
+initialGuess = [0, 0];
+
+% 使用非线性最小二乘法优化
+options = optimoptions('lsqnonlin', 'Display', 'off');
+[estimatedParams, ~] = lsqnonlin(@(params) errorFunction(params, points, distances), initialGuess, [], [], options);
+
+% 获取估计的 k 和 b 参数
+estimated_k = estimatedParams(1);
+estimated_b = estimatedParams(2);
+
+% 输出结果
+fprintf('估计的直线方程: y = %.3fx + %.3f\n', estimated_k, estimated_b);
 
 %% 计算点到直线的距离
 function distance = pointToLineDistance(k, b, x0, y0)
 numerator = abs(k*x0-y0+b);
 denominator = sqrt(k^2+1);
 distance = numerator / denominator;
+end
+% 定义误差函数
+function err = errorFunction(params, points, distances)
+    % 参数 params 是一个向量，包含 k 和 b
+    k = params(1);
+    b = params(2);
+    
+    % 计算每个观测点到直线的距离与观测距离的差异
+    numPoints = size(points, 1);
+    err = zeros(numPoints, 1);
+    for i = 1:numPoints
+        % 获取观测点的坐标
+        x = points(i, 1);
+        y = points(i, 2);
+        
+        % 计算到直线的距离
+        d_i = abs(k * x - y + b) / sqrt(k^2 + 1);
+        
+        % 计算误差
+        err(i) = d_i - distances(i);
+    end
 end

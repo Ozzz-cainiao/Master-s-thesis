@@ -318,7 +318,7 @@ for iii = 1:length(t_obs)
         end
     end
 end
-save('ini_pos.mat','ini_pos')
+% save('ini_pos.mat','ini_pos')
 % load ini_pos.mat
 
 % filtered_position = my_kalman(ini_pos);
@@ -332,9 +332,9 @@ end
 % 计算误差
 for i = 1:num
     if i == 1
-        k = 40; % 这个要根据到达当前平台的时刻确定
+        k = 27; % 这个值依据主函数angM的第一个元素与angR的最先到达的平台第一个非零元素的相隔的周期号决定
     else
-        k = 46;
+        k = 31;
     end
 % 仿真2的参数
 %     if i == 1
@@ -462,7 +462,7 @@ for i = 1 : num
     plot(TA_distances{i}, '-*');
     plot(mean_distances{i}, '-x');
     legend('AOA', 'TDOA', 'TDOA/AOA', '抗异常参量后结果','FontSize', 10)
-    title(['目标',num2str(i),'4种方法定位误差对比'], 'FontSize', 10)
+    title(['目标',num2str(i),'四种方法定位误差对比'], 'FontSize', 10)
     ylabel('定位误差/m', 'FontSize', 10)
     xlabel('点数', 'FontSize', 10)
     set(gca, 'Box', 'on')
@@ -477,6 +477,8 @@ for i = 1 : num
 end
 % 不考虑TDOA算法，则仅考虑TA算法和AOA算法，结合使用，如何结合？
 % 距离上一帧的最近邻与抗异常参量
+
+disp("stop")
 end
 
 %% ==========================子函数===============================
